@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createMeteorPath } from '../src/scripts/garden-scene.ts';
+import { createMeteorPath, resolveSceneViewport } from '../src/scripts/garden-scene.ts';
 
 function assertPathInGutter(path, side, width) {
 
@@ -47,4 +47,11 @@ test('invalid meteor path dimensions return an empty path', () => {
   assert.deepEqual(createMeteorPath('right', 1200, 0, () => 0.5), []);
   assert.deepEqual(createMeteorPath('left', -1, 800, () => 0.5), []);
   assert.deepEqual(createMeteorPath('right', 1200, -1, () => 0.5), []);
+});
+
+test('scene viewport mode switches at the mobile breakpoint', () => {
+  assert.equal(resolveSceneViewport(760, false), 'mobile');
+  assert.equal(resolveSceneViewport(761, false), 'animated');
+  assert.equal(resolveSceneViewport(1200, true), 'static');
+  assert.equal(resolveSceneViewport(0, false), 'mobile');
 });

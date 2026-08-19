@@ -1,15 +1,13 @@
-import {
-	BufferAttribute,
-	BufferGeometry,
-	Group,
-	LineBasicMaterial,
-	LineSegments,
-	OrthographicCamera,
-	Points,
-	PointsMaterial,
-	Scene,
-	WebGLRenderer,
-} from 'three';
+import { BufferAttribute } from 'three/src/core/BufferAttribute.js';
+import { BufferGeometry } from 'three/src/core/BufferGeometry.js';
+import { Group } from 'three/src/objects/Group.js';
+import { LineBasicMaterial } from 'three/src/materials/LineBasicMaterial.js';
+import { LineSegments } from 'three/src/objects/LineSegments.js';
+import { OrthographicCamera } from 'three/src/cameras/OrthographicCamera.js';
+import { Points } from 'three/src/objects/Points.js';
+import { PointsMaterial } from 'three/src/materials/PointsMaterial.js';
+import { Scene } from 'three/src/scenes/Scene.js';
+import type { WebGLRenderer } from './garden-renderer';
 
 export type MeteorSide = 'left' | 'right';
 export interface MeteorPoint {
@@ -25,9 +23,15 @@ const PROJECT_COLORS: Record<string, number> = {
 	klaud: 0xff7043,
 };
 
-const VOID_COLOR = 0x050608;
 const PAPER_COLOR = 0xf2f5f3;
 const VIOLET_COLOR = 0x9b7bff;
+
+export type SceneViewportMode = 'animated' | 'static' | 'mobile';
+
+export function resolveSceneViewport(width: number, prefersReducedMotion: boolean): SceneViewportMode {
+	if (!Number.isFinite(width) || width <= 760) return 'mobile';
+	return prefersReducedMotion ? 'static' : 'animated';
+}
 
 function clamp(value: number, minimum: number, maximum: number): number {
 	return Math.min(maximum, Math.max(minimum, value));
@@ -65,18 +69,15 @@ function createStars(width: number, height: number, color: number, density: numb
 	const random = createRandom(0x6b756e);
 	const count = Math.max(18, Math.round((width * height) / 26000 * density));
 	const positions = new Float32Array(count * 3);
-	const sizes = new Float32Array(count);
 
 	for (let index = 0; index < count; index += 1) {
 		positions[index * 3] = random() * width;
 		positions[index * 3 + 1] = random() * height;
 		positions[index * 3 + 2] = 0;
-		sizes[index] = 0.6 + random() * 1.8;
 	}
 
 	const geometry = new BufferGeometry();
 	geometry.setAttribute('position', new BufferAttribute(positions, 3));
-	geometry.setAttribute('size', new BufferAttribute(sizes, 1));
 	const material = new PointsMaterial({
 		color,
 		size: 1.2,
@@ -174,15 +175,8 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 	const windowObject = ownerDocument?.defaultView;
 	if (!ownerDocument || !documentElement || !windowObject) return () => undefined;
 
-	const reducedMotion = windowObject.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-	const smallScreen = windowObject.matchMedia?.('(max-width: 760px)').matches ?? false;
-	let renderer: WebGLRenderer;
-	try {
-		renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
-	} catch {
-		canvas.dataset.sceneFallback = 'true';
-		return () => undefined;
-	}
+	const prefersReducedMotion = windowObject.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+	let renderer: WebGLRenderer | undefined;
 
 	const scene = new Scene();
 	const camera = new OrthographicCamera(0, 1, 1, 0, -10, 10);
@@ -194,10 +188,12 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 	let visible = ownerDocument.visibilityState !== 'hidden';
 	let width = 0;
 	let height = 0;
+	let viewportMode = resolveSceneViewport(windowObject.innerWidth, prefersReducedMotion);
+	let rebuildScene: (() => void) | undefined;
 
 	const render = (time = 0) => {
-		if (disposed) return;
-		if (!reducedMotion && !smallScreen) {
+		if (disposed || !renderer) return;
+		if (viewportMode === 'animated') {
 			meteors.forEach((meteor) => updateMeteor(meteor, time, width, height));
 		}
 		renderer.render(scene, camera);
@@ -212,13 +208,29 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 	};
 
 	const resize = () => {
-		width = Math.max(1, windowObject.innerWidth);
-		height = Math.max(1, windowObject.innerHeight);
+		const nextWidth = Math.max(1, Number(windowObject.innerWidth) || 0);
+		const nextHeight = Math.max(1, Number(windowObject.innerHeight) || 0);
+		const nextMode = resolveSceneViewport(nextWidth, prefersReducedMotion);
+		const geometryChanged = width !== nextWidth || height !== nextHeight;
+		const viewportChanged = viewportMode !== nextMode;
+		width = nextWidth;
+		height = nextHeight;
 		camera.right = width;
 		camera.bottom = height;
 		camera.updateProjectionMatrix();
-		renderer.setPixelRatio(Math.min(windowObject.devicePixelRatio || 1, 1.5));
-		renderer.setSize(width, height, false);
+		if (renderer) {
+			renderer.setPixelRatio(Math.min(windowObject.devicePixelRatio || 1, 1.5));
+			renderer.setSize(width, height, false);
+		}
+		viewportMode = nextMode;
+		if ((geometryChanged || viewportChanged) && rebuildScene) rebuildScene();
+		if (viewportChanged && viewportMode !== 'animated' && animationFrame) {
+			windowObject.cancelAnimationFrame(animationFrame);
+			animationFrame = 0;
+		}
+		if (viewportChanged && viewportMode === 'animated' && visible && !animationFrame) {
+			animationFrame = windowObject.requestAnimationFrame(animate);
+		}
 	};
 
 	const rebuild = () => {
@@ -232,7 +244,7 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 		const sceneMode = documentElement.dataset.scene ?? 'hero';
 		group.add(createStars(width, height, getPalette(documentElement), sceneMode === 'projects' ? 1.4 : 0.7));
 		group.add(createTraces(width, height, getPalette(documentElement)));
-		if (!smallScreen) {
+		if (viewportMode !== 'mobile') {
 			const left = createMeteor(width, height, 'left', 0x41a3, getPalette(documentElement));
 			const right = createMeteor(width, height, 'right', 0x8e17, getPalette(documentElement));
 			meteors.push(left, right);
@@ -243,14 +255,14 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 	};
 
 	const animate = (time: number) => {
-		if (disposed || !visible || reducedMotion || smallScreen) return;
+		if (disposed || !visible || viewportMode !== 'animated') return;
 		render(time);
 		animationFrame = windowObject.requestAnimationFrame(animate);
 	};
 
 	const onVisibilityChange = () => {
 		visible = ownerDocument.visibilityState !== 'hidden';
-		if (visible && !reducedMotion && !smallScreen && !animationFrame) {
+		if (visible && viewportMode === 'animated' && !animationFrame) {
 			animationFrame = windowObject.requestAnimationFrame(animate);
 		}
 		if (!visible && animationFrame) {
@@ -262,12 +274,26 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 		? new MutationObserver(() => rebuild())
 		: undefined;
 
+	rebuildScene = rebuild;
 	resize();
 	windowObject.addEventListener('resize', resize, { passive: true });
 	ownerDocument.addEventListener('visibilitychange', onVisibilityChange);
 	mutationObserver?.observe(documentElement, { attributes: true, attributeFilter: ['data-scene', 'data-project'] });
-	rebuild();
-	if (!reducedMotion && !smallScreen && visible) animationFrame = windowObject.requestAnimationFrame(animate);
+	void import('./garden-renderer').then(({ WebGLRenderer }) => {
+		if (disposed) return;
+		try {
+			renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
+			resize();
+			rebuild();
+			if (viewportMode === 'animated' && visible && !animationFrame) {
+				animationFrame = windowObject.requestAnimationFrame(animate);
+			}
+		} catch {
+			canvas.dataset.sceneFallback = 'true';
+		}
+	}).catch(() => {
+		canvas.dataset.sceneFallback = 'true';
+	});
 
 	return () => {
 		disposed = true;
@@ -280,6 +306,6 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 				disposeDecorativeObject(object);
 			}
 		});
-		renderer.dispose();
+		renderer?.dispose();
 	};
 }
