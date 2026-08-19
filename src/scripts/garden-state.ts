@@ -29,11 +29,14 @@ export function initGardenState(root: HTMLElement): () => void {
 
   let observer: IntersectionObserver | undefined;
   if (typeof IntersectionObserver !== 'undefined' && sections.length > 0) {
+    const intersectionRatios = new Map<Element, number>();
     observer = new IntersectionObserver((entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (visible) setScene((visible.target as HTMLElement).dataset.sceneSection ?? 'hero');
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) intersectionRatios.set(entry.target, entry.intersectionRatio);
+        else intersectionRatios.delete(entry.target);
+      });
+      const visible = [...intersectionRatios.entries()].sort((a, b) => b[1] - a[1])[0];
+      if (visible) setScene((visible[0] as HTMLElement).dataset.sceneSection ?? 'hero');
     }, { threshold: [0.25, 0.5, 0.75] });
     sections.forEach((section) => observer?.observe(section));
   }
