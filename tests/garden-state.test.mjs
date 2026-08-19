@@ -134,3 +134,42 @@ test('project screenshot uses the correctly encoded Bunderhost asset reference',
   assert.match(gardenSource, /src:\s*['"]\/projects\/bunderhost\.jpg['"]/);
   assert.doesNotMatch(gardenSource, /\/projects\/bunderhost\.png/);
 });
+
+test('site metadata uses the production origin for canonical, social, RSS, and sitemap URLs', () => {
+  const configSource = readSource('../astro.config.mjs');
+  const headSource = readSource('../src/components/BaseHead.astro');
+
+  assert.match(configSource, /site:\s*['"]https:\/\/kcrz\.dev['"]/);
+  assert.match(headSource, /og:url[\s\S]*canonicalURL/);
+  assert.match(headSource, /new URL\('rss\.xml', Astro\.site\)/);
+});
+
+test('non-home pages keep their main content fluid on narrow viewports', () => {
+  const globalStyles = readSource('../src/styles/global.css');
+  const blogSource = readSource('../src/pages/blog/index.astro');
+
+  assert.match(globalStyles, /main:not\(\[data-garden-root\]\)[\s\S]*max-width:\s*100%/);
+  assert.match(blogSource, /width:\s*min\(100%\s*-\s*2 \* var\(--page-gutter\)/);
+  assert.doesNotMatch(blogSource, /width:\s*960px/);
+});
+
+test('homepage scene lifecycle is persisted-aware and reinitializes after bfcache restores', () => {
+  const homepageSource = readSource('../src/pages/index.astro');
+
+  assert.match(homepageSource, /addEventListener\(['"]pagehide['"][\s\S]*event\.persisted/);
+  assert.match(homepageSource, /addEventListener\(['"]pageshow['"][\s\S]*event\.persisted/);
+  assert.match(homepageSource, /if\s*\(event\.persisted\)\s*dispose\(\)/);
+});
+
+test('homepage avoids loading Three.js for small screens while retaining the CSS canvas', () => {
+  const homepageSource = readSource('../src/pages/index.astro');
+
+  assert.match(homepageSource, /matchMedia\(['"]\(max-width:\s*760px\)['"]\)/);
+  assert.match(homepageSource, /if\s*\(!isSmallScreen[\s\S]*import\(['"]\.\.\/scripts\/garden-scene['"]\)/);
+});
+
+test('Klaud uses the optimized WebP project asset', () => {
+  const gardenSource = readSource('../src/components/home/ProjectGarden.astro');
+  assert.match(gardenSource, /src:\s*['"]\/projects\/klaud\.webp['"]/);
+  assert.doesNotMatch(gardenSource, /\/projects\/klaud\.png/);
+});

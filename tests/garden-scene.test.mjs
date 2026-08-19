@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createMeteorPath, resolveSceneViewport } from '../src/scripts/garden-scene.ts';
+import {
+  createMeteorPath,
+  createTopologyLattice,
+  getOutwardPulseProgress,
+  isMeteorActive,
+  METEOR_ACTIVE_MS,
+  METEOR_CYCLE_MS,
+  resolveSceneViewport,
+} from '../src/scripts/garden-scene.ts';
 
 function assertPathInGutter(path, side, width) {
 
@@ -54,4 +62,21 @@ test('scene viewport mode switches at the mobile breakpoint', () => {
   assert.equal(resolveSceneViewport(761, false), 'animated');
   assert.equal(resolveSceneViewport(1200, true), 'static');
   assert.equal(resolveSceneViewport(0, false), 'mobile');
+});
+
+test('system mode exposes a geometric topology lattice and an outward pulse', () => {
+  const lattice = createTopologyLattice(1200, 800);
+  assert.ok(lattice.length >= 8, 'system lattice should contain multiple segments');
+  assert.ok(lattice.some((segment) => segment.x1 !== segment.x2));
+  assert.ok(lattice.some((segment) => segment.y1 !== segment.y2));
+  assert.equal(getOutwardPulseProgress(0), 0);
+  assert.ok(getOutwardPulseProgress(1500) > getOutwardPulseProgress(0));
+  assert.ok(getOutwardPulseProgress(6000) < getOutwardPulseProgress(1500));
+});
+
+test('edge meteors use a sparse schedule instead of continuous loops', () => {
+  assert.ok(METEOR_CYCLE_MS >= METEOR_ACTIVE_MS * 4);
+  assert.equal(isMeteorActive(500, 0), true);
+  assert.equal(isMeteorActive(METEOR_ACTIVE_MS + 1, 0), false);
+  assert.equal(isMeteorActive(METEOR_CYCLE_MS + 500, 0), true);
 });

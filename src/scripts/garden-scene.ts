@@ -15,6 +15,61 @@ export interface MeteorPoint {
 	y: number;
 }
 
+export interface TopologySegment {
+	x1: number;
+	y1: number;
+	x2: number;
+	y2: number;
+}
+
+/** The meteor duty cycle keeps the outer-gutter accents rare and intentional. */
+export const METEOR_CYCLE_MS = 26000;
+export const METEOR_ACTIVE_MS = 3600;
+
+export function isMeteorActive(elapsed: number, start: number): boolean {
+	const cycleElapsed = ((elapsed - start) % METEOR_CYCLE_MS + METEOR_CYCLE_MS) % METEOR_CYCLE_MS;
+	return cycleElapsed <= METEOR_ACTIVE_MS;
+}
+
+/** Build the angular Bunderstack topology lattice in the central reading field. */
+export function createTopologyLattice(width: number, height: number): TopologySegment[] {
+	if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return [];
+	const centerX = width * 0.5;
+	const centerY = height * 0.48;
+	const radius = Math.min(width, height) * 0.22;
+	const segments: TopologySegment[] = [];
+	const ringSizes = [0.42, 0.7, 1];
+	const points = 12;
+
+	for (const ringSize of ringSizes) {
+		for (let index = 0; index < points; index += 1) {
+			const startAngle = (index / points) * Math.PI * 2;
+			const endAngle = ((index + 1) / points) * Math.PI * 2;
+			segments.push({
+				x1: centerX + Math.cos(startAngle) * radius * ringSize,
+				y1: centerY + Math.sin(startAngle) * radius * ringSize,
+				x2: centerX + Math.cos(endAngle) * radius * ringSize,
+				y2: centerY + Math.sin(endAngle) * radius * ringSize,
+			});
+		}
+	}
+	for (let index = 0; index < points; index += 2) {
+		const angle = (index / points) * Math.PI * 2;
+		segments.push({
+			x1: centerX,
+			y1: centerY,
+			x2: centerX + Math.cos(angle) * radius,
+			y2: centerY + Math.sin(angle) * radius,
+		});
+	}
+	return segments;
+}
+
+export function getOutwardPulseProgress(elapsed: number): number {
+	const cycle = 6000;
+	return ((elapsed % cycle) + cycle) % cycle / cycle;
+}
+
 const PROJECT_COLORS: Record<string, number> = {
 	bunderstack: 0x9b7bff,
 	bunderhost: 0x55e6ff,
@@ -113,7 +168,7 @@ interface Meteor {
 	duration: number;
 }
 
-function createMeteor(width: number, height: number, side: MeteorSide, seed: number, color: number): Meteor {
+function createMeteor(width: number, height: number, side: MeteorSide, seed: number, color: number, start: number): Meteor {
 	const path = createMeteorPath(side, width, height, createRandom(seed));
 	const geometry = new BufferGeometry();
 	const positions = new Float32Array(12);
@@ -122,8 +177,8 @@ function createMeteor(width: number, height: number, side: MeteorSide, seed: num
 	return {
 		line: new LineSegments(geometry, material),
 		path,
-		start: seed % 7000,
-		duration: 5200 + (seed % 1800),
+		start,
+		duration: METEOR_ACTIVE_MS,
 	};
 }
 
@@ -140,7 +195,12 @@ function pointAt(path: MeteorPoint[], progress: number): MeteorPoint {
 }
 
 function updateMeteor(meteor: Meteor, elapsed: number, width: number, height: number): void {
-	const progress = ((elapsed - meteor.start) % meteor.duration) / meteor.duration;
+	if (!isMeteorActive(elapsed, meteor.start)) {
+		meteor.line.visible = false;
+		return;
+	}
+	const cycleElapsed = ((elapsed - meteor.start) % METEOR_CYCLE_MS + METEOR_CYCLE_MS) % METEOR_CYCLE_MS;
+	const progress = cycleElapsed / meteor.duration;
 	const head = pointAt(meteor.path, progress);
 	const tail = pointAt(meteor.path, Math.max(0, progress - 0.12));
 	const attribute = meteor.line.geometry.getAttribute('position') as BufferAttribute;
@@ -159,6 +219,43 @@ function updateMeteor(meteor: Meteor, elapsed: number, width: number, height: nu
 	values[11] = 0;
 	attribute.needsUpdate = true;
 	meteor.line.visible = width > 0 && height > 0;
+}
+
+function createTopology(width: number, height: number, color: number): LineSegments {
+	const lattice = createTopologyLattice(width, height);
+	const positions = new Float32Array(lattice.length * 6);
+	lattice.forEach((segment, index) => {
+		const offset = index * 6;
+		positions[offset] = segment.x1;
+		positions[offset + 1] = segment.y1;
+		positions[offset + 3] = segment.x2;
+		positions[offset + 4] = segment.y2;
+	});
+	const geometry = new BufferGeometry();
+	geometry.setAttribute('position', new BufferAttribute(positions, 3));
+	return new LineSegments(geometry, new LineBasicMaterial({ color, transparent: true, opacity: 0.18 }));
+}
+
+function createPulse(width: number, height: number, color: number): LineSegments {
+	const centerX = width * 0.5;
+	const centerY = height * 0.48;
+	const size = Math.min(width, height) * 0.035;
+	const positions = new Float32Array([
+		centerX - size, centerY - size, 0, centerX + size, centerY - size, 0,
+		centerX + size, centerY - size, 0, centerX + size, centerY + size, 0,
+		centerX + size, centerY + size, 0, centerX - size, centerY + size, 0,
+		centerX - size, centerY + size, 0, centerX - size, centerY - size, 0,
+	]);
+	const geometry = new BufferGeometry();
+	geometry.setAttribute('position', new BufferAttribute(positions, 3));
+	return new LineSegments(geometry, new LineBasicMaterial({ color, transparent: true, opacity: 0.45 }));
+}
+
+function updatePulse(pulse: LineSegments, elapsed: number): void {
+	const progress = getOutwardPulseProgress(elapsed);
+	const scale = 0.7 + progress * 2.5;
+	pulse.scale.set(scale, scale, 1);
+	(pulse.material as LineBasicMaterial).opacity = 0.42 * (1 - progress);
 }
 
 function getPalette(documentElement: HTMLElement): number {
@@ -190,11 +287,13 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 	let height = 0;
 	let viewportMode = resolveSceneViewport(windowObject.innerWidth, prefersReducedMotion);
 	let rebuildScene: (() => void) | undefined;
+	let systemPulse: LineSegments | undefined;
 
 	const render = (time = 0) => {
 		if (disposed || !renderer) return;
 		if (viewportMode === 'animated') {
 			meteors.forEach((meteor) => updateMeteor(meteor, time, width, height));
+			if (documentElement.dataset.scene === 'system' && systemPulse) updatePulse(systemPulse, time);
 		}
 		renderer.render(scene, camera);
 	};
@@ -241,12 +340,19 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 		});
 		group.clear();
 		meteors.length = 0;
+		systemPulse = undefined;
 		const sceneMode = documentElement.dataset.scene ?? 'hero';
 		group.add(createStars(width, height, getPalette(documentElement), sceneMode === 'projects' ? 1.4 : 0.7));
 		group.add(createTraces(width, height, getPalette(documentElement)));
+		if (sceneMode === 'system') {
+			group.add(createTopology(width, height, VIOLET_COLOR));
+			systemPulse = createPulse(width, height, VIOLET_COLOR);
+			group.add(systemPulse);
+			if (viewportMode !== 'animated') updatePulse(systemPulse, 0);
+		}
 		if (viewportMode !== 'mobile') {
-			const left = createMeteor(width, height, 'left', 0x41a3, getPalette(documentElement));
-			const right = createMeteor(width, height, 'right', 0x8e17, getPalette(documentElement));
+			const left = createMeteor(width, height, 'left', 0x41a3, getPalette(documentElement), 0);
+			const right = createMeteor(width, height, 'right', 0x8e17, getPalette(documentElement), METEOR_CYCLE_MS / 2);
 			meteors.push(left, right);
 			group.add(left.line, right.line);
 		}

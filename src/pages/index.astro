@@ -28,14 +28,42 @@ import '../styles/home.css';
 			const gardenRoot = document.querySelector<HTMLElement>('[data-garden-root]');
 			const sceneCanvas = document.querySelector<HTMLCanvasElement>('.garden-scene-canvas');
 			if (gardenRoot && sceneCanvas) {
-				const cleanupState = initGardenState(gardenRoot);
-				import('../scripts/garden-scene').then(({ initGardenScene }) => {
-					const cleanupScene = initGardenScene(sceneCanvas);
-					window.addEventListener('pagehide', () => {
-						cleanupScene();
-						cleanupState();
-					}, { once: true });
+				let cleanupState: (() => void) | undefined;
+				let cleanupScene: (() => void) | undefined;
+				let sceneModule: Promise<typeof import('../scripts/garden-scene')> | undefined;
+				let initialized = false;
+
+				const initialize = () => {
+					if (initialized) return;
+					initialized = true;
+					cleanupState = initGardenState(gardenRoot);
+					const isSmallScreen = window.matchMedia('(max-width: 760px)').matches;
+					if (!isSmallScreen) {
+						sceneModule ??= import('../scripts/garden-scene');
+						sceneModule.then(({ initGardenScene }) => {
+							if (initialized) cleanupScene = initGardenScene(sceneCanvas);
+						}).catch(() => {
+							sceneCanvas.dataset.sceneFallback = 'true';
+						});
+					}
+				};
+
+				const dispose = () => {
+					if (!initialized) return;
+					initialized = false;
+					cleanupScene?.();
+					cleanupState?.();
+					cleanupScene = undefined;
+					cleanupState = undefined;
+				};
+
+				window.addEventListener('pagehide', (event) => {
+					if (event.persisted) dispose();
 				});
+				window.addEventListener('pageshow', (event) => {
+					if (event.persisted) initialize();
+				});
+				initialize();
 			}
 		</script>
 	</body>

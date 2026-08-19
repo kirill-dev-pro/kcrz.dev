@@ -80,7 +80,7 @@
 - Modify: `src/components/Footer.astro`
 - Modify: `src/styles/global.css`
 - Modify: `src/consts.ts`
-- Create: `public/projects/bunderhost.png`
+- Create: `public/projects/bunderhost.jpg`
 - Create: `public/projects/hrbreakers.jpg`
 - Create: `public/projects/telegram-vpn.webp`
 - Create: `public/projects/klaud.png`
