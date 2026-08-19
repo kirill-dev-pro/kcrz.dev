@@ -26,6 +26,19 @@ test('projects preserve the geometric garden hierarchy and accent tokens', () =>
   );
 });
 
+test('projects retain their canonical external URLs', () => {
+  assert.deepEqual(
+    Object.fromEntries(projects.map(({ id, href }) => [id, href])),
+    {
+      bunderstack: 'https://github.com/kirill-dev-pro/bunderstack',
+      bunderhost: 'https://bunderhost.kcrz.dev',
+      hrbreakers: 'https://hrbreakers.com',
+      'telegram-vpn': 'https://telegram-vpn.xyz',
+      klaud: 'https://klaud.me',
+    },
+  );
+});
+
 test('scene mode follows the semantic section identifiers', () => {
   assert.equal(resolveSceneMode('hero'), 'hero');
   assert.equal(resolveSceneMode('bunderstack'), 'system');
@@ -103,6 +116,15 @@ test('hover-only territory activation is contained to fine pointers', () => {
   assert.doesNotMatch(
     homeStyles,
     /\n\.project-territory:hover\s*,\s*\.project-territory:focus-within\s*\{/,
+  );
+});
+
+test('mobile growth marker stays contained within the hero width', () => {
+  const homeStyles = readSource('../src/styles/home.css');
+
+  assert.match(
+    homeStyles,
+    /@media\s*\(max-width:\s*760px\)[\s\S]*?\.growth-marker\s*\{[\s\S]*?right:\s*0;[\s\S]*?overflow:\s*hidden;/,
   );
 });
 

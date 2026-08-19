@@ -17,7 +17,7 @@ export const projects: Project[] = [
     accent: '#9b7bff',
     role: 'Foundational opus',
     status: 'Building',
-    href: 'https://github.com/kirill-konshin/bunderstack',
+    href: 'https://github.com/kirill-dev-pro/bunderstack',
     featured: true,
   },
   {
@@ -27,7 +27,7 @@ export const projects: Project[] = [
     accent: '#55e6ff',
     role: 'Infrastructure',
     status: 'Building',
-    href: 'https://bunderhost.com',
+    href: 'https://bunderhost.kcrz.dev',
   },
   {
     id: 'hrbreakers',
@@ -45,7 +45,7 @@ export const projects: Project[] = [
     accent: '#3f87ff',
     role: 'Product',
     status: 'Shipped',
-    href: 'https://t.me/vpn',
+    href: 'https://telegram-vpn.xyz',
   },
   {
     id: 'klaud',
@@ -54,6 +54,6 @@ export const projects: Project[] = [
     accent: '#ff7043',
     role: 'Infrastructure',
     status: 'Building',
-    href: 'https://klaud.dev',
+    href: 'https://klaud.me',
   },
 ];

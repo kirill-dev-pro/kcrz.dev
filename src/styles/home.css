@@ -563,9 +563,10 @@
 	}
 	.garden-hero__intro { max-width: 31rem; }
 	.growth-marker {
-		right: -4rem;
+		right: 0;
 		bottom: 4rem;
 		width: 11rem;
+		overflow: hidden;
 		opacity: 0.32;
 	}
 	.project-garden { padding: 5rem 0 6rem; }
