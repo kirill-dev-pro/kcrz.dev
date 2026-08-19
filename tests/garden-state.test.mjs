@@ -1,8 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { projects } from '../src/data/projects.ts';
 import { initGardenState, resolveSceneMode, shouldAnimate } from '../src/scripts/garden-state.ts';
+
+function readSource(relativePath) {
+  try {
+    return readFileSync(new URL(relativePath, import.meta.url), 'utf8');
+  } catch {
+    return '';
+  }
+}
 
 test('projects preserve the geometric garden hierarchy and accent tokens', () => {
   assert.equal(projects[0].id, 'bunderstack');
@@ -65,4 +74,21 @@ test('scene selection retains the dominant section across partial observer updat
   } finally {
     globalThis.IntersectionObserver = previousObserver;
   }
+});
+
+test('homepage composes the garden components and initializes progressive state', () => {
+  const homepageSource = readSource('../src/pages/index.astro');
+
+  assert.match(homepageSource, /import Hero from ['"]\.\.\/components\/home\/Hero\.astro['"]/);
+  assert.match(homepageSource, /import ProjectGarden from ['"]\.\.\/components\/home\/ProjectGarden\.astro['"]/);
+  assert.match(homepageSource, /import \{ initGardenState \} from ['"]\.\.\/scripts\/garden-state['"]/);
+  assert.match(homepageSource, /<Hero\s*\/>/);
+  assert.match(homepageSource, /<ProjectGarden\s*\/>/);
+  assert.match(homepageSource, /initGardenState\(/);
+});
+
+test('project territories expose direct keyboard-focusable links', () => {
+  const territorySource = readSource('../src/components/home/ProjectTerritory.astro');
+
+  assert.match(territorySource, /<a\b[^>]*href=\{project\.href\}/);
 });

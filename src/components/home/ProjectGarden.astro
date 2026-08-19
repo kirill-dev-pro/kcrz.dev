@@ -1,0 +1,52 @@
+---
+import { projects } from '../../data/projects';
+import ProjectTerritory from './ProjectTerritory.astro';
+
+const projectImages: Partial<Record<(typeof projects)[number]['id'], { src: string; alt: string }>> = {
+	bunderhost: {
+		src: '/projects/bunderhost.png',
+		alt: 'Bunderhost dashboard showing an organization and managed server connection.',
+	},
+	hrbreakers: {
+		src: '/projects/hrbreakers.jpg',
+		alt: 'HR Breakers illustration of a job posting and resume becoming a targeted resume.',
+	},
+	'telegram-vpn': {
+		src: '/projects/telegram-vpn.webp',
+		alt: 'Telegram VPN product artwork with a paper plane crossing a shield.',
+	},
+	klaud: {
+		src: '/projects/klaud.png',
+		alt: 'Klaud dashboard showing a group and its connected OAuth applications.',
+	},
+};
+---
+
+<section id="work" class="project-garden" aria-labelledby="work-title">
+	<header class="project-garden__heading">
+		<div>
+			<p class="project-garden__eyebrow">Selected systems / products</p>
+			<h2 id="work-title">One foundation.<br />Four outward paths.</h2>
+		</div>
+		<p>
+			Bunderstack is the shared root: a backend system designed to reduce choices without reducing
+			control. The products around it test that premise in the real world.
+		</p>
+	</header>
+
+	<div class="project-garden__map">
+		{
+			projects.map((project, index) => {
+				const image = projectImages[project.id];
+				return (
+					<ProjectTerritory
+						project={project}
+						index={index}
+						imageSrc={image?.src}
+						imageAlt={image?.alt}
+					/>
+				);
+			})
+		}
+	</div>
+</section>
