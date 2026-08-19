@@ -92,3 +92,23 @@ test('project territories expose direct keyboard-focusable links', () => {
 
   assert.match(territorySource, /<a\b[^>]*href=\{project\.href\}/);
 });
+
+test('hover-only territory activation is contained to fine pointers', () => {
+  const homeStyles = readSource('../src/styles/home.css');
+
+  assert.match(
+    homeStyles,
+    /@media\s*\(hover:\s*hover\)\s+and\s*\(pointer:\s*fine\)[\s\S]*?\.project-territory:hover[\s\S]*?\.project-territory:focus-within/,
+  );
+  assert.doesNotMatch(
+    homeStyles,
+    /\n\.project-territory:hover\s*,\s*\.project-territory:focus-within\s*\{/,
+  );
+});
+
+test('project screenshot uses the correctly encoded Bunderhost asset reference', () => {
+  const gardenSource = readSource('../src/components/home/ProjectGarden.astro');
+
+  assert.match(gardenSource, /src:\s*['"]\/projects\/bunderhost\.jpg['"]/);
+  assert.doesNotMatch(gardenSource, /\/projects\/bunderhost\.png/);
+});
