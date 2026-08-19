@@ -31,25 +31,28 @@ import '../styles/home.css';
 				let cleanupState: (() => void) | undefined;
 				let cleanupScene: (() => void) | undefined;
 				let sceneModule: Promise<typeof import('../scripts/garden-scene')> | undefined;
+				let sceneGeneration = 0;
 				let initialized = false;
 
 				const initialize = () => {
 					if (initialized) return;
+					const generation = ++sceneGeneration;
 					initialized = true;
 					cleanupState = initGardenState(gardenRoot);
 					const isSmallScreen = window.matchMedia('(max-width: 760px)').matches;
 					if (!isSmallScreen) {
 						sceneModule ??= import('../scripts/garden-scene');
 						sceneModule.then(({ initGardenScene }) => {
-							if (initialized) cleanupScene = initGardenScene(sceneCanvas);
+							if (initialized && sceneGeneration === generation) cleanupScene = initGardenScene(sceneCanvas);
 						}).catch(() => {
-							sceneCanvas.dataset.sceneFallback = 'true';
+							if (initialized && sceneGeneration === generation) sceneCanvas.dataset.sceneFallback = 'true';
 						});
 					}
 				};
 
 				const dispose = () => {
 					if (!initialized) return;
+					sceneGeneration += 1;
 					initialized = false;
 					cleanupScene?.();
 					cleanupState?.();

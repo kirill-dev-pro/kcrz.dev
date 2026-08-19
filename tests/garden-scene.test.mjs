@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   createMeteorPath,
+  createPulseLayout,
   createTopologyLattice,
   getOutwardPulseProgress,
   isMeteorActive,
@@ -72,6 +73,18 @@ test('system mode exposes a geometric topology lattice and an outward pulse', ()
   assert.equal(getOutwardPulseProgress(0), 0);
   assert.ok(getOutwardPulseProgress(1500) > getOutwardPulseProgress(0));
   assert.ok(getOutwardPulseProgress(6000) < getOutwardPulseProgress(1500));
+});
+
+test('system pulse geometry is local to its topology center before scaling', () => {
+  const layout = createPulseLayout(1200, 800);
+  const coordinates = layout.vertices.flatMap(({ x, y }) => [x, y]);
+
+  assert.equal(layout.position.x, 600);
+  assert.equal(layout.position.y, 384);
+  assert.ok(Math.max(...coordinates) <= layout.size);
+  assert.ok(Math.min(...coordinates) >= -layout.size);
+  assert.ok(coordinates.some((coordinate) => coordinate < 0));
+  assert.ok(coordinates.some((coordinate) => coordinate > 0));
 });
 
 test('edge meteors use a sparse schedule instead of continuous loops', () => {

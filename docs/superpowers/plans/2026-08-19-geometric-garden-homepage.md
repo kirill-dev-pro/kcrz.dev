@@ -83,7 +83,7 @@
 - Create: `public/projects/bunderhost.jpg`
 - Create: `public/projects/hrbreakers.jpg`
 - Create: `public/projects/telegram-vpn.webp`
-- Create: `public/projects/klaud.png`
+- Create: `public/projects/klaud.webp`
 
 **Interfaces:**
 - Consumes: `projects` and stable project IDs from Task 1.

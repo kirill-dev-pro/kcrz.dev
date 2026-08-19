@@ -161,6 +161,14 @@ test('homepage scene lifecycle is persisted-aware and reinitializes after bfcach
   assert.match(homepageSource, /if\s*\(event\.persisted\)\s*dispose\(\)/);
 });
 
+test('homepage scene lifecycle ignores stale dynamic imports after a persisted restore', () => {
+  const homepageSource = readSource('../src/pages/index.astro');
+
+  assert.match(homepageSource, /let\s+sceneGeneration\s*=\s*0/);
+  assert.match(homepageSource, /const\s+generation\s*=\s*\+\+sceneGeneration/);
+  assert.match(homepageSource, /sceneGeneration\s*===\s*generation/);
+});
+
 test('homepage avoids loading Three.js for small screens while retaining the CSS canvas', () => {
   const homepageSource = readSource('../src/pages/index.astro');
 

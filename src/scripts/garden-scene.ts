@@ -22,6 +22,17 @@ export interface TopologySegment {
 	y2: number;
 }
 
+export interface PulseVertex {
+	x: number;
+	y: number;
+}
+
+export interface PulseLayout {
+	position: PulseVertex;
+	size: number;
+	vertices: PulseVertex[];
+}
+
 /** The meteor duty cycle keeps the outer-gutter accents rare and intentional. */
 export const METEOR_CYCLE_MS = 26000;
 export const METEOR_ACTIVE_MS = 3600;
@@ -236,19 +247,26 @@ function createTopology(width: number, height: number, color: number): LineSegme
 	return new LineSegments(geometry, new LineBasicMaterial({ color, transparent: true, opacity: 0.18 }));
 }
 
-function createPulse(width: number, height: number, color: number): LineSegments {
-	const centerX = width * 0.5;
-	const centerY = height * 0.48;
+export function createPulseLayout(width: number, height: number): PulseLayout {
+	const position = { x: width * 0.5, y: height * 0.48 };
 	const size = Math.min(width, height) * 0.035;
-	const positions = new Float32Array([
-		centerX - size, centerY - size, 0, centerX + size, centerY - size, 0,
-		centerX + size, centerY - size, 0, centerX + size, centerY + size, 0,
-		centerX + size, centerY + size, 0, centerX - size, centerY + size, 0,
-		centerX - size, centerY + size, 0, centerX - size, centerY - size, 0,
-	]);
+	const vertices = [
+		{ x: -size, y: -size }, { x: size, y: -size },
+		{ x: size, y: -size }, { x: size, y: size },
+		{ x: size, y: size }, { x: -size, y: size },
+		{ x: -size, y: size }, { x: -size, y: -size },
+	];
+	return { position, size, vertices };
+}
+
+function createPulse(width: number, height: number, color: number): LineSegments {
+	const layout = createPulseLayout(width, height);
+	const positions = new Float32Array(layout.vertices.flatMap(({ x, y }) => [x, y, 0]));
 	const geometry = new BufferGeometry();
 	geometry.setAttribute('position', new BufferAttribute(positions, 3));
-	return new LineSegments(geometry, new LineBasicMaterial({ color, transparent: true, opacity: 0.45 }));
+	const pulse = new LineSegments(geometry, new LineBasicMaterial({ color, transparent: true, opacity: 0.45 }));
+	pulse.position.set(layout.position.x, layout.position.y, 0);
+	return pulse;
 }
 
 function updatePulse(pulse: LineSegments, elapsed: number): void {
