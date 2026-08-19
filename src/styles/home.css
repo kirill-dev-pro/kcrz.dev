@@ -14,6 +14,21 @@
 	z-index: 1;
 }
 
+.garden-scene-canvas {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	opacity: 0.72;
+}
+
+.garden-scene-canvas[data-scene-fallback='true'] {
+	display: none;
+}
+
 .garden-hero,
 .project-garden {
 	width: min(100% - 2 * var(--page-gutter), var(--content-max));
@@ -536,6 +551,7 @@
 
 @media (max-width: 760px) {
 	.home-page { background-size: 44px 44px, 44px 44px, auto, auto; }
+	.garden-scene-canvas { opacity: 0.36; }
 	.garden-hero {
 		min-height: 44rem;
 		padding: 7.5rem 0 5rem;
@@ -599,6 +615,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.garden-scene-canvas { opacity: 0.42; }
 	.garden-hero__route svg,
 	.project-territory,
 	.project-territory::before,

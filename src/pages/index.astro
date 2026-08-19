@@ -14,6 +14,7 @@ import '../styles/home.css';
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body class="home-page">
+		<canvas class="garden-scene-canvas" aria-hidden="true"></canvas>
 		<Header />
 		<main data-garden-root>
 			<Hero />
@@ -25,7 +26,17 @@ import '../styles/home.css';
 			import { initGardenState } from '../scripts/garden-state';
 
 			const gardenRoot = document.querySelector<HTMLElement>('[data-garden-root]');
-			if (gardenRoot) initGardenState(gardenRoot);
+			const sceneCanvas = document.querySelector<HTMLCanvasElement>('.garden-scene-canvas');
+			if (gardenRoot && sceneCanvas) {
+				const cleanupState = initGardenState(gardenRoot);
+				import('../scripts/garden-scene').then(({ initGardenScene }) => {
+					const cleanupScene = initGardenScene(sceneCanvas);
+					window.addEventListener('pagehide', () => {
+						cleanupScene();
+						cleanupState();
+					}, { once: true });
+				});
+			}
 		</script>
 	</body>
 </html>
