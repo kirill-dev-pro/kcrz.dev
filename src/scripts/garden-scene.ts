@@ -154,19 +154,6 @@ function createStars(width: number, height: number, color: number, density: numb
 	return new Points(geometry, material);
 }
 
-function createTraces(width: number, height: number, color: number): LineSegments {
-	const geometry = new BufferGeometry();
-	const positions = new Float32Array([
-		width * 0.03, height * 0.19, 0, width * 0.12, height * 0.19, 0,
-		width * 0.08, height * 0.19, 0, width * 0.08, height * 0.31, 0,
-		width * 0.87, height * 0.74, 0, width * 0.98, height * 0.74, 0,
-		width * 0.92, height * 0.74, 0, width * 0.92, height * 0.84, 0,
-	]);
-	geometry.setAttribute('position', new BufferAttribute(positions, 3));
-	const material = new LineBasicMaterial({ color, transparent: true, opacity: 0.18 });
-	return new LineSegments(geometry, material);
-}
-
 function disposeDecorativeObject(object: Points | LineSegments): void {
 	object.geometry.dispose();
 	object.material.dispose();
@@ -361,7 +348,6 @@ export function initGardenScene(canvas: HTMLCanvasElement): () => void {
 		systemPulse = undefined;
 		const sceneMode = documentElement.dataset.scene ?? 'hero';
 		group.add(createStars(width, height, getPalette(documentElement), sceneMode === 'projects' ? 1.4 : 0.7));
-		group.add(createTraces(width, height, getPalette(documentElement)));
 		if (sceneMode === 'system') {
 			group.add(createTopology(width, height, VIOLET_COLOR));
 			systemPulse = createPulse(width, height, VIOLET_COLOR);

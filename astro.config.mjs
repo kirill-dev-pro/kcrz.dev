@@ -10,26 +10,23 @@ export default defineConfig({
 	integrations: [mdx(), sitemap()],
 	fonts: [
 		{
-			provider: fontProviders.local(),
-			name: 'Atkinson',
-			cssVariable: '--font-atkinson',
-			fallbacks: ['sans-serif'],
-			options: {
-				variants: [
-					{
-						src: ['./src/assets/fonts/atkinson-regular.woff'],
-						weight: 400,
-						style: 'normal',
-						display: 'swap',
-					},
-					{
-						src: ['./src/assets/fonts/atkinson-bold.woff'],
-						weight: 700,
-						style: 'normal',
-						display: 'swap',
-					},
-				],
-			},
+			// Accent only: project names and highlighted words.
+			provider: fontProviders.google(),
+			name: 'Tektur',
+			cssVariable: '--font-tektur',
+			weights: ['400 800'],
+			styles: ['normal'],
+			subsets: ['latin', 'latin-ext', 'cyrillic'],
+			fallbacks: ['Arial Narrow', 'Helvetica Neue', 'sans-serif'],
+		},
+		{
+			provider: fontProviders.google(),
+			name: 'Ubuntu Sans',
+			cssVariable: '--font-ubuntu-sans',
+			weights: ['400 800'],
+			styles: ['normal', 'italic'],
+			subsets: ['latin', 'latin-ext', 'cyrillic'],
+			fallbacks: ['system-ui', 'sans-serif'],
 		},
 	],
 });

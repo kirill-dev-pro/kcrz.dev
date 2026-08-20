@@ -24,29 +24,23 @@ const projectImages: Partial<Record<(typeof projects)[number]['id'], { src: stri
 
 <section id="work" class="project-garden" aria-labelledby="work-title">
 	<header class="project-garden__heading">
-		<div>
-			<p class="project-garden__eyebrow">Selected systems / products</p>
-			<h2 id="work-title">One foundation.<br />Four outward paths.</h2>
-		</div>
-		<p>
-			Bunderstack is the shared root: a backend system designed to reduce choices without reducing
-			control. The products around it test that premise in the real world.
-		</p>
+		<h2 id="work-title"><span class="accent">Bunderstack</span> is the foundation for four connected products.</h2>
 	</header>
 
 	<div class="project-garden__map">
-		{
-			projects.map((project, index) => {
-				const image = projectImages[project.id];
-				return (
-					<ProjectTerritory
-						project={project}
-						index={index}
-						imageSrc={image?.src}
-						imageAlt={image?.alt}
-					/>
-				);
-			})
-		}
+		<div class="project-garden__grid">
+			{
+				projects.map((project) => {
+					const image = projectImages[project.id];
+					return (
+						<ProjectTerritory
+							project={project}
+							imageSrc={image?.src}
+							imageAlt={image?.alt}
+						/>
+					);
+				})
+			}
+		</div>
 	</div>
 </section>

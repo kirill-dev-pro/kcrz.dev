@@ -8,8 +8,11 @@
 	--hrbreakers-acid: #d7ff43;
 	--telegram-vpn-blue: #3f87ff;
 	--klaud-ember: #ff7043;
-	--font-display: "Arial Narrow", "Avenir Next Condensed", "Helvetica Neue", sans-serif;
-	--font-body: var(--font-atkinson), "Atkinson Hyperlegible", system-ui, sans-serif;
+	/* Ubuntu Sans carries the whole site; Tektur is reserved for project names
+	   and highlighted words, so it stays a signal rather than a texture. */
+	--font-display: var(--font-ubuntu-sans), system-ui, sans-serif;
+	--font-body: var(--font-ubuntu-sans), system-ui, sans-serif;
+	--font-accent: var(--font-tektur), "Arial Narrow", "Helvetica Neue", sans-serif;
 	--font-utility: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 	--content-max: 80rem;
 	--page-gutter: clamp(1.25rem, 4vw, 4.5rem);
@@ -61,13 +64,23 @@ h6 {
 	margin: 0 0 0.65rem;
 	color: var(--paper);
 	font-family: var(--font-display);
-	line-height: 1.05;
+	font-weight: 800;
+	letter-spacing: -0.032em;
+	line-height: 1.04;
 }
 
-h1 { font-size: clamp(3.5rem, 9vw, 7rem); }
-h2 { font-size: clamp(2.5rem, 6vw, 5rem); }
-h3 { font-size: clamp(2rem, 4vw, 3.5rem); }
-h4 { font-size: 1.6rem; }
+h1 { font-size: clamp(2.6rem, 7vw, 5.4rem); }
+h2 { font-size: clamp(2.1rem, 5vw, 4rem); }
+h3 { font-size: clamp(1.7rem, 3.4vw, 2.8rem); }
+h4 { font-size: 1.45rem; }
+
+/* A highlighted word or phrase: Tektur is wider and needs its tracking back. */
+.accent {
+	color: var(--accent);
+	font-family: var(--font-accent);
+	font-weight: 700;
+	letter-spacing: -0.012em;
+}
 
 p { margin: 0 0 1em; }
 .prose p { margin-bottom: 2em; }

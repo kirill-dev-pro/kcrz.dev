@@ -1,6 +1,5 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import Hero from '../components/home/Hero.astro';
 import ProjectGarden from '../components/home/ProjectGarden.astro';
@@ -14,16 +13,20 @@ import '../styles/home.css';
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body class="home-page">
+		<div class="hex-field" aria-hidden="true"></div>
 		<canvas class="garden-scene-canvas" aria-hidden="true"></canvas>
 		<Header />
 		<main data-garden-root>
 			<Hero />
 			<ProjectGarden />
 		</main>
-		<Footer />
 
 		<script>
 			import { initGardenState } from '../scripts/garden-state';
+			import { initHexParallax } from '../scripts/hex-parallax';
+
+			const hexField = document.querySelector<HTMLElement>('.hex-field');
+			if (hexField) initHexParallax(hexField);
 
 			const gardenRoot = document.querySelector<HTMLElement>('[data-garden-root]');
 			const sceneCanvas = document.querySelector<HTMLCanvasElement>('.garden-scene-canvas');

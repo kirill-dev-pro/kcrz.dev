@@ -1,88 +1,118 @@
 ---
-import { SITE_TITLE } from '../consts';
+import { SITE_TITLE } from "../consts";
 ---
 
 <header class="site-header">
-	<nav aria-label="Primary navigation">
-		<a class="site-header__brand" href="/">{SITE_TITLE}</a>
-		<div class="site-header__links">
-			<a href="/#about">About</a>
-			<a href="/#work">Work</a>
-			<a href="/blog">Blog</a>
-		</div>
-	</nav>
+  <nav aria-label="Primary navigation">
+    <a class="site-header__brand" href="/">{SITE_TITLE}</a>
+    <div class="site-header__links">
+      <a href="/#about">About</a>
+      <a href="/#work">Work</a>
+      <!-- <a href="/blog">Blog</a> -->
+      <a
+        class="site-header__x"
+        href="https://x.com/kcrz_dev"
+        target="_blank"
+        rel="me noopener noreferrer"
+        aria-label="Kcrz on X"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M18.9 2.6h3.4l-7.4 8.5 8.7 11.5h-6.8l-5.3-7-6.1 7H2l7.9-9.1L1.6 2.6h7l4.8 6.4 5.5-6.4Zm-1.2 18h1.9L7.4 4.5H5.4l12.3 16.1Z"
+          ></path>
+        </svg>
+      </a>
+    </div>
+  </nav>
 </header>
 
 <style>
-	.site-header {
-		position: fixed;
-		inset: 0 0 auto;
-		z-index: 20;
-		padding: 0 var(--page-gutter);
-		background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0));
-		pointer-events: none;
-	}
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 20;
+    padding: 0 var(--page-gutter);
+    background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0));
+    pointer-events: none;
+  }
 
-	nav {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: min(100%, var(--content-max));
-		min-height: 4.75rem;
-		margin: 0 auto;
-		border-bottom: 1px solid rgba(242, 245, 243, 0.12);
-		pointer-events: auto;
-	}
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: min(100%, var(--content-max));
+    min-height: 4.75rem;
+    margin: 0 auto;
+    border-bottom: 1px solid rgba(242, 245, 243, 0.12);
+    pointer-events: auto;
+  }
 
-	nav a {
-		color: var(--paper);
-		text-decoration: none;
-	}
+  nav a {
+    color: var(--paper);
+    text-decoration: none;
+  }
 
-	.site-header__brand {
-		font-family: var(--font-display);
-		font-size: 1rem;
-		font-weight: 800;
-		letter-spacing: -0.035em;
-	}
+  .site-header__brand {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+  }
 
-	.site-header__links {
-		display: flex;
-		gap: clamp(1rem, 3vw, 2.5rem);
-	}
+  .site-header__links {
+    display: flex;
+    gap: clamp(1rem, 3vw, 2.5rem);
+  }
 
-	.site-header__links a {
-		position: relative;
-		padding: 0.55rem 0;
-		font-family: var(--font-utility);
-		font-size: 0.68rem;
-		letter-spacing: 0.13em;
-		text-transform: uppercase;
-	}
+  .site-header__links a {
+    position: relative;
+    padding: 0.55rem 0;
+    font-family: var(--font-utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
 
-	.site-header__links a::after {
-		position: absolute;
-		inset: auto 0 0;
-		height: 1px;
-		background: var(--bunderstack-violet);
-		content: '';
-		transform: scaleX(0);
-		transform-origin: left;
-		transition: transform 160ms ease;
-	}
+  .site-header__links a::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    background: var(--bunderstack-violet);
+    content: "";
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 160ms ease;
+  }
 
-	.site-header__links a:hover::after,
-	.site-header__links a:focus-visible::after {
-		transform: scaleX(1);
-	}
+  .site-header__links a:hover::after,
+  .site-header__links a:focus-visible::after {
+    transform: scaleX(1);
+  }
 
-	@media (max-width: 480px) {
-		nav {
-			min-height: 4rem;
-		}
+  .site-header__x {
+    display: inline-flex;
+    align-items: center;
+  }
 
-		.site-header__links {
-			gap: 0.85rem;
-		}
-	}
+  .site-header__x svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    fill: currentColor;
+    transition: fill 160ms ease;
+  }
+
+  .site-header__x:hover svg,
+  .site-header__x:focus-visible svg {
+    fill: var(--bunderstack-violet);
+  }
+
+  @media (max-width: 480px) {
+    nav {
+      min-height: 4rem;
+    }
+
+    .site-header__links {
+      gap: 0.85rem;
+    }
+  }
 </style>

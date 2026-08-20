@@ -32,7 +32,10 @@ const { title, description, image = FallbackImage } = Astro.props;
 />
 <meta name="generator" content={Astro.generator} />
 
-<Font cssVariable="--font-atkinson" preload />
+<!-- No `preload`: it fetches every subset eagerly, including Cyrillic, which defeats
+     unicode-range subsetting. Astro's metric-matched fallbacks keep the swap stable. -->
+<Font cssVariable="--font-ubuntu-sans" />
+<Font cssVariable="--font-tektur" />
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />

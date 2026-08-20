@@ -1,631 +1,756 @@
 .home-page {
-	position: relative;
-	overflow-x: clip;
-	background:
-		linear-gradient(rgba(155, 123, 255, 0.035) 1px, transparent 1px),
-		linear-gradient(90deg, rgba(155, 123, 255, 0.035) 1px, transparent 1px),
-		radial-gradient(circle at 78% 12%, rgba(155, 123, 255, 0.1), transparent 23rem),
-		var(--void);
-	background-size: 72px 72px, 72px 72px, auto, auto;
+  position: relative;
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(155, 123, 255, 0.1), transparent 23rem), var(--void);
 }
 
 .home-page main {
-	position: relative;
-	z-index: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* Honeycomb field behind everything. It is fixed, and the parallax script offsets
+   its background-position by a fraction of the scroll, so it drifts slower than
+   the page instead of sitting still. The bleed keeps its edges off-screen.
+   The tile holds one whole cell plus the two half-cells of the offset row, which
+   is what makes it repeat seamlessly. */
+.hex-field {
+  position: fixed;
+  inset: -12vh -2vw;
+  opacity: 0.3;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='51.96' height='90' viewBox='0 0 51.96 90'%3E%3Cg fill='none' stroke='%23f2f5f3' stroke-width='1' stroke-opacity='0.05'%3E%3Cpath d='M25.98 0L51.96 15L51.96 45L25.98 60L0 45L0 15Z'/%3E%3Cpath d='M0 45L25.98 60L25.98 90L0 105L-25.98 90L-25.98 60Z'/%3E%3Cpath d='M51.96 45L77.94 60L77.94 90L51.96 105L25.98 90L25.98 60Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: 0 var(--hex-shift, 0px);
+  background-size: 78px 135px;
+  pointer-events: none;
+}
+
+/* The same lattice in accent colour, revealed only inside a soft disc that
+   follows the cursor, so the cells under the pointer light up. */
+.hex-field::after {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='51.96' height='90' viewBox='0 0 51.96 90'%3E%3Cg fill='none' stroke='%239b7bff' stroke-width='1.2' stroke-opacity='0.85'%3E%3Cpath d='M25.98 0L51.96 15L51.96 45L25.98 60L0 45L0 15Z'/%3E%3Cpath d='M0 45L25.98 60L25.98 90L0 105L-25.98 90L-25.98 60Z'/%3E%3Cpath d='M51.96 45L77.94 60L77.94 90L51.96 105L25.98 90L25.98 60Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: inherit;
+  background-size: inherit;
+  opacity: var(--hex-glow, 0);
+  mask-image: radial-gradient(
+    circle at var(--hex-x, -999px) var(--hex-y, -999px),
+    #000 0,
+    rgba(0, 0, 0, 0.55) 70px,
+    transparent 180px
+  );
+  transition: opacity 260ms ease;
+  content: "";
 }
 
 .garden-scene-canvas {
-	position: fixed;
-	inset: 0;
-	z-index: 0;
-	display: block;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-	opacity: 0.72;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.72;
 }
 
-.garden-scene-canvas[data-scene-fallback='true'] {
-	display: none;
+.garden-scene-canvas[data-scene-fallback="true"] {
+  display: none;
 }
 
 .garden-hero,
 .project-garden {
-	width: min(100% - 2 * var(--page-gutter), var(--content-max));
-	margin-inline: auto;
+  width: min(100% - 2 * var(--page-gutter), var(--content-max));
+  margin-inline: auto;
 }
 
 .garden-hero {
-	position: relative;
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(15rem, 29rem);
-	align-items: center;
-	min-height: 100svh;
-	padding: 9rem 0 7rem;
-	isolation: isolate;
-}
-
-.garden-hero::before,
-.garden-hero::after {
-	position: absolute;
-	z-index: -1;
-	content: '';
-}
-
-.garden-hero::before {
-	inset: 19% 4% auto 42%;
-	height: 1px;
-	background: linear-gradient(90deg, rgba(242, 245, 243, 0.28), transparent);
-	transform: rotate(-11deg);
-	transform-origin: left;
-}
-
-.garden-hero::after {
-	right: 0;
-	bottom: 8%;
-	width: 38%;
-	height: 1px;
-	background: rgba(155, 123, 255, 0.32);
+  position: relative;
+  display: grid;
+  align-content: center;
+  min-height: 100svh;
+  padding: 9rem 0 7rem;
+  isolation: isolate;
 }
 
 .garden-hero__coordinates,
-.garden-hero__eyebrow,
 .garden-hero__route,
-.project-garden__eyebrow,
-.project-territory__header,
-.project-territory__kicker {
-	font-family: var(--font-utility);
-	font-size: 0.66rem;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
+.project-territory__meta {
+  font-family: var(--font-utility);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .garden-hero__coordinates {
-	position: absolute;
-	top: 7.25rem;
-	right: 0;
-	display: flex;
-	gap: 1.4rem;
-	color: rgba(146, 153, 154, 0.64);
+  position: absolute;
+  top: 7.25rem;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  color: rgba(146, 153, 154, 0.64);
 }
 
-.garden-hero__eyebrow {
-	margin-bottom: clamp(1.5rem, 4vh, 3rem);
-	color: var(--muted);
+.garden-hero__coordinates::before {
+  width: clamp(3rem, 7vw, 7rem);
+  height: 1px;
+  background: rgba(242, 245, 243, 0.16);
+  content: "";
 }
 
 .garden-hero h1 {
-	margin: 0;
-	font-size: clamp(5.1rem, 13vw, 11.75rem);
-	font-weight: 850;
-	letter-spacing: -0.085em;
-	line-height: 0.72;
-	white-space: nowrap;
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2.9rem, 7.4vw, 6.8rem);
+  font-weight: 800;
+  letter-spacing: -0.038em;
+  line-height: 0.98;
 }
 
-.garden-hero h1 span {
-	color: var(--bunderstack-violet);
-	font-weight: 500;
-}
-
-.garden-hero__thesis {
-	margin: clamp(1.7rem, 4vw, 3.5rem) 0 1rem;
-	font-family: var(--font-display);
-	font-size: clamp(1.85rem, 4vw, 3.7rem);
-	font-weight: 700;
-	letter-spacing: -0.045em;
-	line-height: 1;
+.garden-hero__base {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: clamp(2.75rem, 5.5vw, 4.5rem);
+  padding-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid rgba(242, 245, 243, 0.16);
 }
 
 .garden-hero__intro {
-	max-width: 41rem;
-	margin-bottom: 2rem;
-	color: var(--muted);
-	font-size: clamp(1rem, 1.5vw, 1.2rem);
-	line-height: 1.65;
+  grid-column: 1 / 6;
+  max-width: 41rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.62;
 }
 
 .garden-hero__route {
-	display: inline-flex;
-	align-items: center;
-	gap: 1rem;
-	padding: 0.7rem 0;
-	color: var(--paper);
-	text-decoration: none;
+  grid-column: 8 / 13;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  min-height: 3.5rem;
+  padding: 0 1.35rem;
+  border: 1px solid rgba(242, 245, 243, 0.28);
+  color: var(--paper);
+  text-decoration: none;
+  clip-path: polygon(
+    0.8rem 0,
+    100% 0,
+    100% calc(100% - 0.8rem),
+    calc(100% - 0.8rem) 100%,
+    0 100%,
+    0 0.8rem
+  );
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.garden-hero__route:hover,
+.garden-hero__route:focus-visible {
+  border-color: var(--bunderstack-violet);
+  background: rgba(155, 123, 255, 0.08);
 }
 
 .garden-hero__route svg,
 .project-territory__copy a svg {
-	width: 2.7rem;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1;
-	transition: transform 180ms ease;
+  width: 2.7rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  transition: transform 180ms ease;
 }
 
 .garden-hero__route:hover svg,
 .garden-hero__route:focus-visible svg,
 .project-territory__copy a:hover svg,
 .project-territory__copy a:focus-visible svg {
-	transform: translateX(0.35rem);
+  transform: translateX(0.35rem);
 }
 
+/* A cropped plate rather than a boxed object: it runs past the right viewport
+   edge and sits under the type, so the violet node lands clear of the headline. */
 .growth-marker {
-	position: relative;
-	justify-self: end;
-	width: min(25vw, 22rem);
-	aspect-ratio: 1;
-	border: 1px solid rgba(242, 245, 243, 0.12);
-	clip-path: polygon(18% 0, 100% 0, 100% 72%, 72% 100%, 0 100%, 0 20%);
+  position: absolute;
+  top: 52%;
+  /* Exactly the page gutter, so the plate reaches the viewport edge without
+	   ever pushing the document into horizontal scroll. */
+  right: calc(-1 * var(--page-gutter));
+  z-index: -1;
+  width: min(38vw, 30rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(242, 245, 243, 0.22);
+  opacity: 1;
+  clip-path: polygon(18% 0, 100% 0, 100% 72%, 72% 100%, 0 100%, 0 20%);
+  /* Raised off centre so it clears the base row; it still tracks the centred
+	   copy block as the viewport height changes. */
+  transform: translateY(-60%);
 }
 
 .growth-marker::before,
 .growth-marker::after {
-	position: absolute;
-	content: '';
+  position: absolute;
+  content: "";
 }
 
 .growth-marker::before {
-	inset: 18%;
-	border: 1px solid rgba(155, 123, 255, 0.35);
-	clip-path: polygon(50% 0, 100% 45%, 70% 100%, 10% 82%, 0 22%);
-	transform: rotate(18deg);
+  inset: 18%;
+  border: 1px solid rgba(155, 123, 255, 0.35);
+  clip-path: polygon(50% 0, 100% 45%, 70% 100%, 10% 82%, 0 22%);
+  transform: rotate(18deg);
 }
 
 .growth-marker::after {
-	inset: 44%;
-	background: var(--bunderstack-violet);
-	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-	box-shadow: 0 0 2rem rgba(155, 123, 255, 0.75);
+  inset: 44%;
+  background: var(--bunderstack-violet);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  box-shadow: 0 0 2rem rgba(155, 123, 255, 0.75);
 }
 
 .growth-marker__branch {
-	position: absolute;
-	top: 49%;
-	left: 49%;
-	height: 1px;
-	background: rgba(242, 245, 243, 0.36);
-	transform-origin: left;
+  position: absolute;
+  top: 49%;
+  left: 49%;
+  height: 1px;
+  background: rgba(242, 245, 243, 0.36);
+  transform-origin: left;
 }
 
-.growth-marker__branch--one { width: 44%; transform: rotate(-34deg); }
-.growth-marker__branch--two { width: 36%; transform: rotate(128deg); }
-
-.growth-marker__label {
-	position: absolute;
-	right: 10%;
-	bottom: 8%;
-	font-family: var(--font-utility);
-	font-size: 0.56rem;
-	letter-spacing: 0.13em;
+.growth-marker__branch--one {
+  width: 44%;
+  transform: rotate(-34deg);
+}
+.growth-marker__branch--two {
+  width: 36%;
+  transform: rotate(128deg);
 }
 
 .project-garden {
-	position: relative;
-	padding: 8rem 0 9rem;
-}
-
-.project-garden::before {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 11rem;
-	height: 1px;
-	background: var(--bunderstack-violet);
-	content: '';
+  position: relative;
+  padding: 8rem 0 9rem;
 }
 
 .project-garden__heading {
-	display: grid;
-	grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
-	align-items: end;
-	gap: clamp(3rem, 9vw, 9rem);
-	margin-bottom: clamp(4rem, 9vw, 7rem);
-}
-
-.project-garden__eyebrow {
-	margin-bottom: 1.25rem;
-	color: var(--bunderstack-violet);
+  margin-bottom: clamp(4rem, 9vw, 7rem);
 }
 
 .project-garden h2 {
-	font-size: clamp(3rem, 7vw, 6.6rem);
-	font-weight: 760;
-	letter-spacing: -0.06em;
+  max-width: 18ch;
+  font-size: clamp(2.4rem, 5.6vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.034em;
+  line-height: 1;
 }
 
-.project-garden__heading > p {
-	max-width: 33rem;
-	margin: 0 0 0.65rem;
-	color: var(--muted);
-}
-
-.project-garden__map {
-	display: grid;
-	grid-template-columns: repeat(12, minmax(0, 1fr));
-	gap: 1px;
-	background: rgba(242, 245, 243, 0.12);
-	border: 1px solid rgba(242, 245, 243, 0.12);
-	clip-path: polygon(2.5rem 0, 100% 0, 100% calc(100% - 2.5rem), calc(100% - 2.5rem) 100%, 0 100%, 0 2.5rem);
+/* The tiles no longer tile a plane: each one is its own shape standing in
+   space, so the map is a plain container and the grid carries real gaps. */
+.project-garden__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(0.9rem, 1.8vw, 1.6rem);
 }
 
 .project-territory {
-	position: relative;
-	z-index: 1;
-	grid-column: span 6;
-	min-height: 29rem;
-	padding: clamp(1.4rem, 3vw, 2.5rem);
-	overflow: hidden;
-	background: var(--carbon);
-	isolation: isolate;
-	transition: background-color 180ms ease, z-index 0s linear 180ms;
+  --cut-sm: clamp(1rem, 1.6vw, 1.6rem);
+  --cut-md: clamp(1.5rem, 2.6vw, 2.6rem);
+  --cut-lg: clamp(2rem, 3.6vw, 3.6rem);
+  --cut-xl: clamp(2.75rem, 5.4vw, 5.4rem);
+
+  --tile-pad: clamp(1.4rem, 3vw, 2.5rem);
+
+  position: relative;
+  z-index: 1;
+  grid-column: span 6;
+  /* Tall enough that the enlarged screenshot clears the copy above it. */
+  min-height: clamp(30rem, 40vw, 37rem);
+  padding: var(--tile-pad);
+  overflow: hidden;
+  /* This paints the outline; ::before covers all but its outermost pixel. */
+  background-color: rgba(242, 245, 243, 0.16);
+  isolation: isolate;
+  transition:
+    background-color 180ms ease,
+    z-index 0s linear 180ms;
 }
 
 .project-territory:nth-child(2),
-.project-territory:nth-child(5) { grid-column: span 7; }
+.project-territory:nth-child(5) {
+  grid-column: span 7;
+}
 
+/* Narrower columns wrap the title onto more lines, so they need more room
+   before the screenshot starts. */
 .project-territory:nth-child(3),
-.project-territory:nth-child(4) { grid-column: span 5; }
+.project-territory:nth-child(4) {
+  grid-column: span 5;
+  min-height: clamp(34rem, 46vw, 42rem);
+}
 
 .project-territory--featured {
-	grid-column: 1 / -1;
-	min-height: clamp(31rem, 46vw, 41rem);
-	background: var(--carbon);
+  grid-column: 1 / -1;
+  min-height: clamp(31rem, 46vw, 41rem);
 }
 
 .project-territory::before,
 .project-territory::after {
-	position: absolute;
-	z-index: -1;
-	content: '';
-	pointer-events: none;
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
 }
 
+/* The outline is the 1px of tile background left uncovered by ::before, not a
+   `border` — a border is drawn on the rectangle and gets sliced off by any
+   clip-path, so it could never trace a cut corner. Both layers share the clip,
+   so the outline follows every edge the tile actually has. */
 .project-territory::before {
-	inset: 0;
-	border: 1px solid transparent;
-	transition: border-color 180ms ease, box-shadow 180ms ease;
+  inset: 1px;
+  background-color: var(--carbon);
+  clip-path: inherit;
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+/* Each project keeps its own silhouette rather than sharing one rectangle. */
+[data-project-id="bunderstack"] {
+  clip-path: polygon(
+    var(--cut-lg) 0,
+    100% 0,
+    100% calc(100% - var(--cut-xl)),
+    calc(100% - var(--cut-xl)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+
+[data-project-id="bunderhost"] {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--cut-md)) 0,
+    100% var(--cut-md),
+    100% 100%,
+    var(--cut-lg) 100%,
+    0 calc(100% - var(--cut-lg))
+  );
+}
+
+/* The slant runs the full height, so the copy is inset past it. */
+[data-project-id="hrbreakers"] {
+  padding-left: calc(var(--tile-pad) + var(--cut-lg));
+  clip-path: polygon(var(--cut-lg) 0, 100% 0, 100% 100%, 0 100%);
+}
+
+[data-project-id="telegram-vpn"] {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--cut-xl)),
+    calc(100% - var(--cut-xl)) 100%,
+    0 100%
+  );
+}
+
+[data-project-id="klaud"] {
+  clip-path: polygon(0 var(--cut-lg), var(--cut-lg) 0, 100% 0, 100% 100%, 0 100%);
 }
 
 .project-territory::after {
-	right: -10%;
-	bottom: -35%;
-	width: 65%;
-	aspect-ratio: 1;
-	background: radial-gradient(circle, color-mix(in srgb, var(--project-accent) 17%, transparent), transparent 67%);
-	opacity: 0;
-	transition: opacity 180ms ease;
+  right: -10%;
+  bottom: -35%;
+  width: 65%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--project-accent) 17%, transparent),
+    transparent 67%
+  );
+  opacity: 0;
+  transition: opacity 180ms ease;
 }
 
 .project-territory:focus-within {
-	z-index: 3;
-	background-color: color-mix(in srgb, var(--carbon) 94%, var(--project-accent));
-	transition-delay: 0s;
+  z-index: 3;
+  background-color: var(--project-accent);
+  transition-delay: 0s;
 }
 
 .project-territory:focus-within::before {
-	border-color: var(--project-accent);
-	box-shadow: inset 0 0 3rem color-mix(in srgb, var(--project-accent) 7%, transparent);
+  background-color: color-mix(in srgb, var(--carbon) 94%, var(--project-accent));
+  box-shadow: inset 0 0 3rem color-mix(in srgb, var(--project-accent) 7%, transparent);
 }
 
-.project-territory:focus-within::after { opacity: 1; }
-
-.project-territory__trace {
-	position: absolute;
-	top: 5.4rem;
-	right: 2.5rem;
-	width: 26%;
-	height: 1px;
-	background: rgba(242, 245, 243, 0.18);
-}
-
-.project-territory__trace::before {
-	position: absolute;
-	right: 0;
-	bottom: 0;
-	width: 1px;
-	height: 2.4rem;
-	background: inherit;
-	content: '';
-}
-
-.project-territory__header {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 1rem;
-	color: var(--muted);
-}
-
-.project-territory__number {
-	color: rgba(242, 245, 243, 0.36);
-	font-size: 0.58rem;
-}
-
-.project-territory__labels {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	gap: 0.5rem 1rem;
-}
-
-.project-territory__labels span + span::before {
-	margin-right: 1rem;
-	color: rgba(242, 245, 243, 0.2);
-	content: '/';
+.project-territory:focus-within::after {
+  opacity: 1;
 }
 
 .project-territory__body {
-	position: relative;
-	display: grid;
-	grid-template-columns: minmax(0, 0.82fr) minmax(16rem, 1.18fr);
-	align-items: center;
-	min-height: calc(100% - 2rem);
-	gap: clamp(2rem, 6vw, 6rem);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(16rem, 1.18fr);
+  align-items: center;
+  min-height: 100%;
+  gap: clamp(2rem, 6vw, 6rem);
 }
 
 .project-territory:not(.project-territory--featured) .project-territory__body {
-	display: block;
+  display: block;
 }
 
 .project-territory__copy {
-	position: relative;
-	z-index: 2;
-	max-width: 37rem;
-}
-
-.project-territory__kicker {
-	margin-bottom: 1.5rem;
-	color: var(--muted);
+  position: relative;
+  z-index: 2;
+  max-width: 37rem;
 }
 
 .project-territory h3 {
-	margin: 0 0 1.15rem;
-	font-size: clamp(2.7rem, 5.2vw, 5.6rem);
-	font-weight: 760;
-	letter-spacing: -0.055em;
+  margin: 0 0 1.15rem;
+  font-size: clamp(2.1rem, 3.9vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.034em;
+  line-height: 1.02;
+}
+
+/* Project names are the other place Tektur is allowed. */
+.project-territory__name {
+  font-family: var(--font-accent);
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  transition: color 180ms ease;
+}
+
+.project-territory:focus-within .project-territory__name {
+  color: var(--project-accent);
 }
 
 .project-territory:not(.project-territory--featured) h3 {
-	margin-top: clamp(5rem, 10vw, 9rem);
-	font-size: clamp(2.35rem, 4vw, 4rem);
+  margin-top: clamp(3rem, 7vw, 6rem);
+  font-size: clamp(1.7rem, 2.7vw, 2.7rem);
 }
 
-.project-territory__copy > p:not(.project-territory__kicker) {
-	max-width: 37rem;
-	color: var(--muted);
-	line-height: 1.55;
+.project-territory__copy > p {
+  max-width: 37rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.project-territory__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 1.35rem;
+  color: var(--muted);
+}
+
+.project-territory__meta span + span::before {
+  margin-right: 1rem;
+  color: rgba(242, 245, 243, 0.2);
+  content: "/";
 }
 
 .project-territory__copy a {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.8rem;
-	margin-top: 1rem;
-	padding: 0.55rem 0;
-	color: var(--paper);
-	font-family: var(--font-utility);
-	font-size: 0.67rem;
-	letter-spacing: 0.12em;
-	text-decoration: none;
-	text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 0.55rem 0;
+  color: var(--paper);
+  font-family: var(--font-utility);
+  font-size: 0.67rem;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
 }
 
-.project-territory:focus-within .project-territory__copy a { color: var(--project-accent); }
+.project-territory:focus-within .project-territory__copy a {
+  color: var(--project-accent);
+}
 
 .project-territory__copy a:focus-visible {
-	outline-color: var(--project-accent);
+  outline-color: var(--project-accent);
 }
 
+/* Same two clipped layers as the tile: the figure paints the outline, the image
+   sits 1px inside it under the same clip, so the outline traces the cut corners. */
 .project-territory__media {
-	position: relative;
-	z-index: 1;
-	margin: 2.5rem 0 0;
-	filter: saturate(0.2) brightness(0.62);
-	opacity: 0.22;
-	transform: translate(7%, 12%) rotate(1.3deg);
-	transition: filter 220ms ease, opacity 180ms ease, transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  position: relative;
+  z-index: 1;
+  margin: 2.25rem 0 0;
+  padding: 1px;
+  background-color: rgba(242, 245, 243, 0.2);
+  filter: saturate(0.6) brightness(0.86);
+  opacity: 0.62;
+  clip-path: polygon(
+    1.5rem 0,
+    100% 0,
+    100% calc(100% - 1.5rem),
+    calc(100% - 1.5rem) 100%,
+    0 100%,
+    0 1.5rem
+  );
+  transition:
+    filter 220ms ease,
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .project-territory__media img {
-	width: 100%;
-	aspect-ratio: 16 / 9;
-	object-fit: cover;
-	border: 1px solid rgba(242, 245, 243, 0.2);
-	clip-path: polygon(1.5rem 0, 100% 0, 100% calc(100% - 1.5rem), calc(100% - 1.5rem) 100%, 0 100%, 0 1.5rem);
-}
-
-.project-territory__plate {
-	position: absolute;
-	inset: -0.75rem 1.2rem 0.75rem -1.2rem;
-	z-index: -1;
-	border: 1px solid rgba(242, 245, 243, 0.12);
-	clip-path: polygon(1.5rem 0, 100% 0, 100% calc(100% - 1.5rem), calc(100% - 1.5rem) 100%, 0 100%, 0 1.5rem);
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  clip-path: inherit;
 }
 
 .project-territory:focus-within .project-territory__media {
-	filter: saturate(0.88) brightness(0.92);
-	opacity: 0.9;
-	transform: translate(2%, 2%) rotate(-0.6deg) scale(1.03);
+  filter: saturate(1) brightness(1);
+  opacity: 1;
+  transform: scale(1.06);
 }
 
 .project-territory__topology {
-	position: relative;
-	min-height: 21rem;
-	color: rgba(242, 245, 243, 0.24);
-	transition: color 180ms ease;
+  position: relative;
+  min-height: 21rem;
+  color: rgba(242, 245, 243, 0.24);
+  transition: color 180ms ease;
 }
 
 .project-territory:focus-within .project-territory__topology {
-	color: var(--project-accent);
+  color: var(--project-accent);
 }
 
 @media (hover: hover) and (pointer: fine) {
-	.project-territory:hover {
-		z-index: 3;
-		background-color: color-mix(in srgb, var(--carbon) 94%, var(--project-accent));
-		transition-delay: 0s;
-	}
+  .project-territory:hover {
+    z-index: 3;
+    background-color: var(--project-accent);
+    transition-delay: 0s;
+  }
 
-	.project-territory:hover::before {
-		border-color: var(--project-accent);
-		box-shadow: inset 0 0 3rem color-mix(in srgb, var(--project-accent) 7%, transparent);
-	}
+  .project-territory:hover::before {
+    background-color: color-mix(in srgb, var(--carbon) 94%, var(--project-accent));
+    box-shadow: inset 0 0 3rem color-mix(in srgb, var(--project-accent) 7%, transparent);
+  }
 
-	.project-territory:hover::after { opacity: 1; }
-	.project-territory:hover .project-territory__copy a { color: var(--project-accent); }
-	.project-territory:hover .project-territory__media {
-		filter: saturate(0.88) brightness(0.92);
-		opacity: 0.9;
-		transform: translate(2%, 2%) rotate(-0.6deg) scale(1.03);
-	}
-	.project-territory:hover .project-territory__topology { color: var(--project-accent); }
+  .project-territory:hover::after {
+    opacity: 1;
+  }
+  .project-territory:hover .project-territory__name {
+    color: var(--project-accent);
+  }
+  .project-territory:hover .project-territory__copy a {
+    color: var(--project-accent);
+  }
+  .project-territory:hover .project-territory__media {
+    filter: saturate(1) brightness(1);
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  .project-territory:hover .project-territory__topology {
+    color: var(--project-accent);
+  }
 }
 
 .project-territory__topology svg {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1;
-	vector-effect: non-scaling-stroke;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
 }
 
 .topology-node {
-	position: absolute;
-	z-index: 1;
-	display: grid;
-	place-items: center;
-	width: 3.7rem;
-	aspect-ratio: 1;
-	border: 1px solid currentColor;
-	background: var(--carbon);
-	font-family: var(--font-utility);
-	font-size: 0.56rem;
-	clip-path: polygon(25% 0, 100% 0, 100% 75%, 75% 100%, 0 100%, 0 25%);
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 3.7rem;
+  aspect-ratio: 1;
+  border: 1px solid currentColor;
+  background: var(--carbon);
+  font-family: var(--font-utility);
+  font-size: 0.56rem;
+  clip-path: polygon(25% 0, 100% 0, 100% 75%, 75% 100%, 0 100%, 0 25%);
 }
 
-.topology-node--origin { top: 42%; left: 5%; }
-.topology-node--one { top: 10%; right: 8%; }
-.topology-node--two { right: 8%; bottom: 9%; }
-.topology-node--three { right: 34%; bottom: 8%; }
+.topology-node--origin {
+  top: 42%;
+  left: 5%;
+}
+.topology-node--one {
+  top: 10%;
+  right: 8%;
+}
+.topology-node--two {
+  right: 8%;
+  bottom: 9%;
+}
+.topology-node--three {
+  right: 34%;
+  bottom: 8%;
+}
 
 @media (hover: hover) and (pointer: fine) and (min-width: 761px) {
-	.project-territory:hover,
-	.project-territory:focus-within {
-		transform: scale(1.006);
-	}
+  /* No scale on the tile: growing it pushed its highlighted border outside the
+	   grid's clip-path, which erased the border on the outer tiles. The accent
+	   border, tint, and glow carry the hover state instead. */
+  .project-territory:not(.project-territory--featured) .project-territory__media {
+    position: absolute;
+    right: -2%;
+    bottom: 0;
+    width: 80%;
+  }
 
-	.project-territory:not(.project-territory--featured) .project-territory__media {
-		position: absolute;
-		right: -8%;
-		bottom: -7%;
-		width: 68%;
-	}
-
-	.project-territory:not(.project-territory--featured) .project-territory__copy {
-		max-width: 68%;
-	}
+  .project-territory:not(.project-territory--featured) .project-territory__copy {
+    max-width: 78%;
+  }
 }
 
 @media (max-width: 940px) {
-	.garden-hero { grid-template-columns: 1fr; }
-	.growth-marker {
-		position: absolute;
-		right: 2%;
-		bottom: 10%;
-		width: 13rem;
-		opacity: 0.58;
-	}
-	.garden-hero__copy { position: relative; z-index: 1; }
-	.project-garden__heading {
-		grid-template-columns: 1fr;
-		gap: 2rem;
-	}
-	.project-territory,
-	.project-territory:nth-child(n) { grid-column: span 6; }
-	.project-territory--featured { grid-column: 1 / -1 !important; }
+  .garden-hero__base {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .garden-hero__intro,
+  .garden-hero__route {
+    grid-column: 1 / -1;
+  }
+  .garden-hero__route {
+    justify-self: start;
+    min-width: min(100%, 22rem);
+  }
+  .growth-marker {
+    top: auto;
+    right: 2%;
+    bottom: 10%;
+    width: 13rem;
+    opacity: 0.5;
+    transform: none;
+  }
+  .garden-hero__copy {
+    position: relative;
+    z-index: 1;
+  }
+  .project-garden__heading {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .project-territory,
+  .project-territory:nth-child(n) {
+    grid-column: span 6;
+  }
+  .project-territory--featured {
+    grid-column: 1 / -1 !important;
+  }
 }
 
 @media (max-width: 760px) {
-	.home-page { background-size: 44px 44px, 44px 44px, auto, auto; }
-	.garden-scene-canvas { opacity: 0.36; }
-	.garden-hero {
-		min-height: 44rem;
-		padding: 7.5rem 0 5rem;
-	}
-	.garden-hero__coordinates { display: none; }
-	.garden-hero h1 {
-		font-size: clamp(4.35rem, 23vw, 7.3rem);
-		white-space: normal;
-	}
-	.garden-hero__intro { max-width: 31rem; }
-	.growth-marker {
-		right: 0;
-		bottom: 4rem;
-		width: 11rem;
-		overflow: hidden;
-		opacity: 0.32;
-	}
-	.project-garden { padding: 5rem 0 6rem; }
-	.project-garden__heading { margin-bottom: 3.5rem; }
-	.project-garden__map {
-		display: block;
-		background: transparent;
-		border: 0;
-		clip-path: none;
-	}
-	.project-territory,
-	.project-territory:nth-child(n),
-	.project-territory--featured {
-		min-height: 0;
-		margin-bottom: 1px;
-		padding: 1.35rem;
-		border: 1px solid rgba(242, 245, 243, 0.12);
-		clip-path: polygon(1.25rem 0, 100% 0, 100% calc(100% - 1.25rem), calc(100% - 1.25rem) 100%, 0 100%, 0 1.25rem);
-	}
-	.project-territory__body,
-	.project-territory:not(.project-territory--featured) .project-territory__body {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 1.5rem;
-	}
-	.project-territory__copy { max-width: none; }
-	.project-territory h3,
-	.project-territory:not(.project-territory--featured) h3 {
-		margin-top: 3.75rem;
-		font-size: clamp(2.4rem, 13vw, 4rem);
-	}
-	.project-territory__kicker { margin-bottom: -2.25rem; }
-	.project-territory__media {
-		order: 2;
-		margin: 1.25rem 0 0;
-		filter: saturate(0.7) brightness(0.82);
-		opacity: 0.72;
-		transform: none;
-	}
-	.project-territory__topology {
-		min-height: 13rem;
-		opacity: 0.65;
-	}
-	.project-territory:hover .project-territory__media,
-	.project-territory:focus-within .project-territory__media { transform: none; }
+  .hex-field {
+    background-size: 520px 900px;
+  }
+  .garden-scene-canvas {
+    opacity: 0.36;
+  }
+  .garden-hero {
+    min-height: 48rem;
+    padding: 7.5rem 0 5rem;
+  }
+  .garden-hero__coordinates {
+    display: none;
+  }
+  .garden-hero h1 {
+    max-width: 16ch;
+    font-size: clamp(1.9rem, 10vw, 3.1rem);
+  }
+  .garden-hero__intro {
+    max-width: 31rem;
+  }
+  .growth-marker {
+    right: 0;
+    top: auto;
+    bottom: 0.5rem;
+    width: 7.5rem;
+    overflow: hidden;
+    opacity: 0.34;
+    transform: none;
+  }
+  .project-garden {
+    padding: 5rem 0 6rem;
+  }
+  .project-garden__heading {
+    margin-bottom: 3.5rem;
+  }
+  .project-garden__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  /* Per-project silhouettes stay; only the box metrics change here. */
+  .project-territory,
+  .project-territory:nth-child(n),
+  .project-territory--featured {
+    min-height: 0;
+    padding: 1.35rem;
+    border: 0;
+  }
+  .project-territory__body,
+  .project-territory:not(.project-territory--featured) .project-territory__body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+  .project-territory__copy {
+    max-width: none;
+  }
+  .project-territory h3,
+  .project-territory:not(.project-territory--featured) h3 {
+    margin-top: 2.75rem;
+    font-size: clamp(2.15rem, 10.5vw, 3.4rem);
+  }
+  .project-territory__media {
+    order: 2;
+    margin: 1.25rem 0 0;
+    filter: saturate(0.7) brightness(0.82);
+    opacity: 0.72;
+    transform: none;
+  }
+  .project-territory__topology {
+    min-height: 13rem;
+    opacity: 0.65;
+  }
+  .project-territory:hover .project-territory__media,
+  .project-territory:focus-within .project-territory__media {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.garden-scene-canvas { opacity: 0.42; }
-	.garden-hero__route svg,
-	.project-territory,
-	.project-territory::before,
-	.project-territory::after,
-	.project-territory__media,
-	.project-territory__topology,
-	.project-territory__copy a svg { transition: none; }
-	.project-territory:hover,
-	.project-territory:focus-within,
-	.project-territory:hover .project-territory__media,
-	.project-territory:focus-within .project-territory__media { transform: none; }
+  .garden-scene-canvas {
+    opacity: 0.42;
+  }
+  .garden-hero__route svg,
+  .project-territory,
+  .project-territory::before,
+  .project-territory::after,
+  .project-territory__media,
+  .project-territory__topology,
+  .project-territory__copy a svg {
+    transition: none;
+  }
+  .project-territory:hover,
+  .project-territory:focus-within,
+  .project-territory:hover .project-territory__media,
+  .project-territory:focus-within .project-territory__media {
+    transform: none;
+  }
 }

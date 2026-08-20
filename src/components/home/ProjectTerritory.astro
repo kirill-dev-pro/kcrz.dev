@@ -3,13 +3,16 @@ import type { Project } from '../../data/projects';
 
 interface Props {
 	project: Project;
-	index: number;
 	imageSrc?: string;
 	imageAlt?: string;
 }
 
-const { project, index, imageSrc, imageAlt } = Astro.props;
-const territoryNumber = String(index + 1).padStart(2, '0');
+const { project, imageSrc, imageAlt } = Astro.props;
+
+// Every title opens with the project name; set just that part in the accent face.
+const titleTail = project.title.startsWith(project.name)
+	? project.title.slice(project.name.length)
+	: null;
 ---
 
 <article
@@ -19,20 +22,23 @@ const territoryNumber = String(index + 1).padStart(2, '0');
 	data-scene-section={project.id}
 	style={`--project-accent: ${project.accent}`}
 >
-	<div class="project-territory__trace" aria-hidden="true"></div>
-	<header class="project-territory__header">
-		<span class="project-territory__number" aria-hidden="true">{territoryNumber}</span>
-		<div class="project-territory__labels" aria-label={`${project.role}, ${project.status}`}>
-			<span>{project.role}</span>
-			<span>{project.status}</span>
-		</div>
-	</header>
-
 	<div class="project-territory__body">
 		<div class="project-territory__copy">
-			{project.featured && <p class="project-territory__kicker">The root system</p>}
-			<h3>{project.name}</h3>
+			<h3>
+				{titleTail === null ? (
+					project.title
+				) : (
+					<Fragment>
+						<span class="project-territory__name">{project.name}</span>
+						{titleTail}
+					</Fragment>
+				)}
+			</h3>
 			<p>{project.description}</p>
+			<div class="project-territory__meta" aria-label={`${project.role}, ${project.status}`}>
+				<span>{project.role}</span>
+				<span>{project.status}</span>
+			</div>
 			<a href={project.href} aria-label={`Visit ${project.name}`}>
 				<span>Open project</span>
 				<svg viewBox="0 0 42 14" aria-hidden="true">
@@ -44,7 +50,6 @@ const territoryNumber = String(index + 1).padStart(2, '0');
 		{
 			imageSrc ? (
 				<figure class="project-territory__media">
-					<div class="project-territory__plate" aria-hidden="true" />
 					<img src={imageSrc} alt={imageAlt} loading="lazy" decoding="async" />
 				</figure>
 			) : (
