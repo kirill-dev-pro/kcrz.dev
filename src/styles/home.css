@@ -264,6 +264,7 @@
   --cut-xl: clamp(2.75rem, 5.4vw, 5.4rem);
 
   --tile-pad: clamp(1.4rem, 3vw, 2.5rem);
+  --tile-glow: 300px;
 
   position: relative;
   z-index: 1;
@@ -272,8 +273,16 @@
   min-height: clamp(30rem, 40vw, 37rem);
   padding: var(--tile-pad);
   overflow: hidden;
-  /* This paints the outline; ::before covers all but its outermost pixel. */
+  /* This layer paints the outline; ::before covers all but its outermost pixel.
+     The gradient rides on top of the flat colour and is anchored to the pointer,
+     so the outline lights up only along the stretch nearest the cursor — the
+     pointer does not have to be over the tile for its near edge to catch. */
   background-color: rgba(242, 245, 243, 0.16);
+  background-image: radial-gradient(
+    circle var(--tile-glow) at var(--px, -9999px) var(--py, -9999px),
+    var(--project-accent) 0,
+    color-mix(in srgb, var(--project-accent) 0%, transparent) 100%
+  );
   isolation: isolate;
   transition:
     background-color 180ms ease,
@@ -343,6 +352,23 @@
 }
 
 /* The slant runs the full height, so the copy is inset past it. */
+/* Mirror of the HR Breakers slant, so the copy is inset past it on the right. */
+[data-project-id="iqdoc"] {
+  padding-right: calc(var(--tile-pad) + var(--cut-lg));
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--cut-lg)) 100%, 0 100%);
+}
+
+[data-project-id="airealty"] {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--cut-lg)),
+    calc(100% - var(--cut-lg)) 100%,
+    var(--cut-lg) 100%,
+    0 calc(100% - var(--cut-lg))
+  );
+}
+
 [data-project-id="hrbreakers"] {
   padding-left: calc(var(--tile-pad) + var(--cut-lg));
   clip-path: polygon(var(--cut-lg) 0, 100% 0, 100% 100%, 0 100%);

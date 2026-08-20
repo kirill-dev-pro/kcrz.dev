@@ -1,5 +1,12 @@
 export type Project = {
-  id: 'bunderstack' | 'bunderhost' | 'hrbreakers' | 'telegram-vpn' | 'klaud';
+  id:
+    | 'bunderstack'
+    | 'bunderhost'
+    | 'iqdoc'
+    | 'airealty'
+    | 'hrbreakers'
+    | 'telegram-vpn'
+    | 'klaud';
   name: string;
   title: string;
   description: string;
@@ -33,6 +40,28 @@ export const projects: Project[] = [
     href: 'https://bunderhost.kcrz.dev',
   },
   {
+    id: 'iqdoc',
+    name: 'IQDOC',
+    title: 'IQDOC answers clinical questions with the sources attached.',
+    description:
+      'A medical AI navigator that searches Russian clinical guidelines and regulations alongside ESMO, ASA, and FAR material, reconciles the documents, computes clinical scores, and cites where every answer came from.',
+    accent: '#ff7300',
+    role: 'Product',
+    status: 'Shipped',
+    href: 'https://iqdoc.ai',
+  },
+  {
+    id: 'airealty',
+    name: 'AI Realty',
+    title: 'AI Realty launches property ads in two minutes.',
+    description:
+      'Agents, agencies, and developers upload a listing and set a budget; the AI launches and optimises campaigns across Instagram, TikTok, YouTube, and Facebook, and reports what is working in one dashboard.',
+    accent: '#c9a96e',
+    role: 'Product',
+    status: 'Shipped',
+    href: 'https://airealty.global',
+  },
+  {
     id: 'hrbreakers',
     name: 'HR Breakers',
     title: 'HR Breakers turns vacancies into targeted resumes.',
@@ -57,7 +86,7 @@ export const projects: Project[] = [
     name: 'Klaud',
     title: 'Klaud provides identity for OAuth, OIDC, and SAML apps.',
     description: 'Groups connect people to applications through one compact authentication and authorization layer.',
-    accent: '#ff7043',
+    accent: '#f97316',
     role: 'Infrastructure',
     status: 'Building',
     href: 'https://klaud.me',

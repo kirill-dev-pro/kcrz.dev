@@ -52,7 +52,9 @@ const titleTail = project.title.startsWith(project.name)
 				<figure class="project-territory__media">
 					<img src={imageSrc} alt={imageAlt} loading="lazy" decoding="async" />
 				</figure>
-			) : (
+			) : project.featured ? (
+				/* The lattice illustrates the foundation itself, so it stays on the
+				   featured tile rather than repeating on every screenshot-less one. */
 				<div class="project-territory__topology" aria-hidden="true">
 					<span class="topology-node topology-node--origin">API</span>
 					<span class="topology-node topology-node--one">RPC</span>
@@ -62,7 +64,7 @@ const titleTail = project.title.startsWith(project.name)
 						<path d="M90 112H190L246 48H365M190 112l56 67h119M246 48v131" />
 					</svg>
 				</div>
-			)
+			) : null
 		}
 	</div>
 </article>

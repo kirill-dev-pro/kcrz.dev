@@ -24,9 +24,14 @@ import '../styles/home.css';
 		<script>
 			import { initGardenState } from '../scripts/garden-state';
 			import { initHexParallax } from '../scripts/hex-parallax';
+			import { initTileProximity } from '../scripts/tile-proximity';
 
 			const hexField = document.querySelector<HTMLElement>('.hex-field');
 			if (hexField) initHexParallax(hexField);
+
+			initTileProximity(
+				Array.from(document.querySelectorAll<HTMLElement>('.project-territory')),
+			);
 
 			const gardenRoot = document.querySelector<HTMLElement>('[data-garden-root]');
 			const sceneCanvas = document.querySelector<HTMLCanvasElement>('.garden-scene-canvas');

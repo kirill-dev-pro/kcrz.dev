@@ -7,7 +7,9 @@
 	--bunderhost-cyan: #55e6ff;
 	--hrbreakers-acid: #d7ff43;
 	--telegram-vpn-blue: #3f87ff;
-	--klaud-ember: #ff7043;
+	--klaud-ember: #f97316;
+	--iqdoc-orange: #ff7300;
+	--airealty-gold: #c9a96e;
 	/* Ubuntu Sans carries the whole site; Tektur is reserved for project names
 	   and highlighted words, so it stays a signal rather than a texture. */
 	--font-display: var(--font-ubuntu-sans), system-ui, sans-serif;
