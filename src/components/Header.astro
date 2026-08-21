@@ -32,7 +32,10 @@ import { SITE_TITLE } from "../consts";
     inset: 0 0 auto;
     z-index: 20;
     padding: 0 var(--page-gutter);
-    background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0));
+    background: color-mix(in srgb, var(--carbon) 65%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(242, 245, 243, 0.12);
     pointer-events: none;
   }
 
@@ -43,7 +46,6 @@ import { SITE_TITLE } from "../consts";
     width: min(100%, var(--content-max));
     min-height: 4.75rem;
     margin: 0 auto;
-    border-bottom: 1px solid rgba(242, 245, 243, 0.12);
     pointer-events: auto;
   }
 
@@ -67,7 +69,7 @@ import { SITE_TITLE } from "../consts";
   .site-header__links a {
     position: relative;
     padding: 0.55rem 0;
-    font-family: var(--font-utility);
+    font-family: var(--font-accent);
     font-size: 0.68rem;
     letter-spacing: 0.13em;
     text-transform: uppercase;

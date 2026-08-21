@@ -90,6 +90,7 @@ p { margin: 0 0 1em; }
 a {
 	color: inherit;
 	text-underline-offset: 0.18em;
+	font-family: var(--font-accent);
 }
 
 a:hover { color: var(--paper); }

@@ -2,8 +2,8 @@ export type Project = {
   id:
     | 'bunderstack'
     | 'bunderhost'
-    | 'iqdoc'
     | 'airealty'
+    | 'iqdoc'
     | 'hrbreakers'
     | 'telegram-vpn'
     | 'klaud';
@@ -40,17 +40,6 @@ export const projects: Project[] = [
     href: 'https://bunderhost.kcrz.dev',
   },
   {
-    id: 'iqdoc',
-    name: 'IQDOC',
-    title: 'IQDOC answers clinical questions with the sources attached.',
-    description:
-      'A medical AI navigator that searches Russian clinical guidelines and regulations alongside ESMO, ASA, and FAR material, reconciles the documents, computes clinical scores, and cites where every answer came from.',
-    accent: '#ff7300',
-    role: 'Product',
-    status: 'Shipped',
-    href: 'https://iqdoc.ai',
-  },
-  {
     id: 'airealty',
     name: 'AI Realty',
     title: 'AI Realty launches property ads in two minutes.',
@@ -60,6 +49,17 @@ export const projects: Project[] = [
     role: 'Product',
     status: 'Shipped',
     href: 'https://airealty.global',
+  },
+  {
+    id: 'iqdoc',
+    name: 'IQDOC',
+    title: 'IQDOC answers clinical questions with the sources attached.',
+    description:
+      'A medical AI navigator that searches Russian clinical guidelines and regulations alongside ESMO, ASA, and FAR material, reconciles the documents, computes clinical scores, and cites where every answer came from.',
+    accent: '#ff7300',
+    role: 'Product',
+    status: 'Shipped',
+    href: 'https://iqdoc.ai',
   },
   {
     id: 'hrbreakers',
