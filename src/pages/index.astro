@@ -25,13 +25,16 @@ import '../styles/home.css';
 			import { initGardenState } from '../scripts/garden-state';
 			import { initHexParallax } from '../scripts/hex-parallax';
 			import { initTileProximity } from '../scripts/tile-proximity';
+			import { initScrollFocus } from '../scripts/scroll-focus';
 
 			const hexField = document.querySelector<HTMLElement>('.hex-field');
 			if (hexField) initHexParallax(hexField);
 
-			initTileProximity(
-				Array.from(document.querySelectorAll<HTMLElement>('.project-territory')),
+			const territories = Array.from(
+				document.querySelectorAll<HTMLElement>('.project-territory'),
 			);
+			initTileProximity(territories);
+			initScrollFocus(territories);
 
 			const gardenRoot = document.querySelector<HTMLElement>('[data-garden-root]');
 			const sceneCanvas = document.querySelector<HTMLCanvasElement>('.garden-scene-canvas');

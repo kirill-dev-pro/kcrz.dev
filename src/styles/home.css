@@ -432,13 +432,17 @@
   transition: opacity 180ms ease;
 }
 
-.project-territory:focus-within {
+/* `.is-lit` is the same state, raised by scrolling instead of a pointer: on
+   touch screens the tile nearest the middle of the viewport carries it. */
+.project-territory:focus-within,
+.project-territory.is-lit {
   z-index: 3;
   background-color: var(--project-accent);
   transition-delay: 0s;
 }
 
-.project-territory:focus-within::before {
+.project-territory:focus-within::before,
+.project-territory.is-lit::before {
   background-color: color-mix(
     in srgb,
     var(--carbon) 94%,
@@ -448,7 +452,8 @@
     color-mix(in srgb, var(--project-accent) 7%, transparent);
 }
 
-.project-territory:focus-within::after {
+.project-territory:focus-within::after,
+.project-territory.is-lit::after {
   opacity: 1;
 }
 
@@ -487,7 +492,8 @@
   transition: color 180ms ease;
 }
 
-.project-territory:focus-within .project-territory__name {
+.project-territory:focus-within .project-territory__name,
+.project-territory.is-lit .project-territory__name {
   color: var(--project-accent);
 }
 
@@ -547,7 +553,8 @@
     background-color 180ms ease;
 }
 
-.project-territory:focus-within .project-territory__url {
+.project-territory:focus-within .project-territory__url,
+.project-territory.is-lit .project-territory__url {
   color: var(--project-accent);
   border-color: color-mix(in srgb, var(--project-accent) 40%, transparent);
 }
@@ -618,7 +625,8 @@
   background-color: #111111;
 }
 
-.project-territory:focus-within .project-territory__media {
+.project-territory:focus-within .project-territory__media,
+.project-territory.is-lit .project-territory__media {
   filter: saturate(1) brightness(1);
   opacity: 1;
   transform: scale(1.06);
@@ -631,7 +639,8 @@
   transition: color 180ms ease;
 }
 
-.project-territory:focus-within .project-territory__topology {
+.project-territory:focus-within .project-territory__topology,
+.project-territory.is-lit .project-territory__topology {
   color: var(--project-accent);
 }
 
@@ -828,9 +837,26 @@
     padding-left: calc(1.35rem + var(--cut-lg));
   }
 
+  /* The hexagon spends most of a phone's width on its two points, so the
+     featured tile becomes an upright rectangle with a bevel on each corner
+     and gets the full measure back for its copy. */
   .project-territory[data-project-id="bunderstack"] {
-    padding-left: calc(1.35rem + var(--cut-xl));
-    padding-right: calc(1.35rem + var(--cut-xl));
+    padding-left: 1.35rem;
+    padding-right: 1.35rem;
+    clip-path: polygon(
+      var(--cut-md) 0,
+      calc(100% - var(--cut-md)) 0,
+      100% var(--cut-md),
+      100% calc(100% - var(--cut-md)),
+      calc(100% - var(--cut-md)) 100%,
+      var(--cut-md) 100%,
+      0 calc(100% - var(--cut-md)),
+      0 var(--cut-md)
+    );
+  }
+
+  [data-project-id="bunderstack"] .project-territory__url {
+    right: clamp(1.4rem, 3vw, 2.5rem);
   }
   .project-territory__body,
   .project-territory:not(.project-territory--featured)
@@ -860,7 +886,8 @@
     opacity: 0.65;
   }
   .project-territory:hover .project-territory__media,
-  .project-territory:focus-within .project-territory__media {
+  .project-territory:focus-within .project-territory__media,
+  .project-territory.is-lit .project-territory__media {
     transform: none;
   }
 }
@@ -881,7 +908,8 @@
   .project-territory:hover,
   .project-territory:focus-within,
   .project-territory:hover .project-territory__media,
-  .project-territory:focus-within .project-territory__media {
+  .project-territory:focus-within .project-territory__media,
+  .project-territory.is-lit .project-territory__media {
     transform: none;
   }
 }
