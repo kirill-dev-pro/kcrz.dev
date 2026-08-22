@@ -342,20 +342,26 @@
 
 /* Each project keeps its own silhouette rather than sharing one rectangle. */
 [data-project-id="bunderstack"] {
-  padding-left: calc(var(--tile-pad) + var(--cut-xl));
-  padding-right: calc(var(--tile-pad) + var(--cut-xl));
   clip-path: polygon(
-    var(--cut-xl) 0,
-    calc(100% - var(--cut-xl)) 0,
-    100% 50%,
-    calc(100% - var(--cut-xl)) 100%,
-    var(--cut-xl) 100%,
-    0 50%
+    var(--cut-lg) 0,
+    calc(100% - var(--cut-lg)) 0,
+    100% var(--cut-lg),
+    100% calc(100% - var(--cut-lg)),
+    calc(100% - var(--cut-lg)) 100%,
+    var(--cut-lg) 100%,
+    0 calc(100% - var(--cut-lg)),
+    0 var(--cut-lg)
   );
 }
 
+[data-project-id="bunderstack"] .project-territory__sticker {
+  top: clamp(1rem, 2vw, 1.8rem);
+  left: clamp(1rem, 2vw, 1.8rem);
+}
+
 [data-project-id="bunderstack"] .project-territory__url {
-  right: calc(clamp(1.4rem, 3vw, 2.5rem) + var(--cut-xl) - 1rem);
+  top: clamp(1.2rem, 2.5vw, 2.2rem);
+  right: clamp(1.2rem, 2.5vw, 2.2rem);
 }
 
 [data-project-id="bunderhost"] {
@@ -531,6 +537,75 @@
   );
 }
 
+.project-territory__sticker {
+  position: absolute;
+  top: clamp(1rem, 2.5vw, 2rem);
+  left: clamp(1rem, 2.5vw, 2rem);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.42rem, 0.9vw, 0.58rem) clamp(1.2rem, 2.2vw, 1.75rem);
+  background-color: #00d592;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 9999px;
+  transform: rotate(-10deg);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.35),
+    0 8px 18px rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(0, 213, 146, 0.35);
+  pointer-events: none;
+  user-select: none;
+  transition:
+    transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 280ms ease,
+    background-color 280ms ease;
+}
+
+.project-territory__sticker-text {
+  color: #ffffff;
+  font-family: var(--font-accent);
+  font-size: clamp(1.05rem, 1.8vw, 1.4rem);
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.project-territory:hover .project-territory__sticker,
+.project-territory:focus-within .project-territory__sticker {
+  transform: rotate(-5deg) scale(1.1) translateY(-3px);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.35),
+    0 12px 24px rgba(0, 0, 0, 0.55),
+    0 0 28px rgba(0, 213, 146, 0.65);
+}
+
+.project-territory__logo {
+  display: inline-block;
+  vertical-align: middle;
+  width: clamp(2rem, 3.2vw, 2.75rem);
+  height: clamp(2rem, 3.2vw, 2.75rem);
+  margin-right: 0.65rem;
+  margin-bottom: 0.18em;
+  object-fit: contain;
+  border-radius: 6px;
+  background-color: rgba(242, 245, 243, 0.08);
+  padding: 3px;
+  box-shadow: 0 0 16px rgba(155, 123, 255, 0.3);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.project-territory:hover .project-territory__logo,
+.project-territory:focus-within .project-territory__logo {
+  transform: scale(1.06);
+  box-shadow: 0 0 22px rgba(155, 123, 255, 0.6);
+}
+
 .project-territory__url {
   position: absolute;
   top: clamp(1.4rem, 3vw, 2.5rem);
@@ -583,6 +658,9 @@
 /* Same two clipped layers as the tile: the figure paints the outline, the image
    sits 1px inside it under the same clip, so the outline traces the cut corners. */
 .project-territory__media {
+  display: block;
+  cursor: pointer;
+  text-decoration: none;
   position: relative;
   z-index: 1;
   margin: 2.25rem 0 0;
@@ -604,12 +682,27 @@
     transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+.project-territory__media:focus-visible {
+  outline: 2px solid var(--project-accent);
+  outline-offset: 4px;
+}
+
+.project-territory--featured .project-territory__media {
+  margin: 0;
+}
+
 .project-territory__media img {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   clip-path: inherit;
+}
+
+/* Bunderstack landing screenshot */
+[data-project-id="bunderstack"] .project-territory__media img {
+  object-fit: cover;
+  background-color: #050608;
 }
 
 /* The Bunderhost hero is wider than 16:9, so it letterboxes instead of

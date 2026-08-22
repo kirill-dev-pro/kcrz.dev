@@ -26,7 +26,7 @@ export const projects: Project[] = [
     accent: '#9b7bff',
     role: 'Foundational opus',
     status: 'Building',
-    href: 'https://github.com/kirill-dev-pro/bunderstack',
+    href: 'https://bunderstack.kcrz.dev',
     featured: true,
   },
   {

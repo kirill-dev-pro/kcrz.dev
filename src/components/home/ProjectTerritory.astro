@@ -5,9 +5,12 @@ interface Props {
 	project: Project;
 	imageSrc?: string;
 	imageAlt?: string;
+	logoSrc?: string;
+	logoAlt?: string;
+	stickerTag?: string;
 }
 
-const { project, imageSrc, imageAlt } = Astro.props;
+const { project, imageSrc, imageAlt, logoSrc, logoAlt, stickerTag } = Astro.props;
 
 // Every title opens with the project name; set just that part in the accent face.
 const titleTail = project.title.startsWith(project.name)
@@ -24,6 +27,13 @@ const displayUrl = project.href.replace(/^https?:\/\//, '').replace(/\/$/, '');
 	data-scene-section={project.id}
 	style={`--project-accent: ${project.accent}`}
 >
+	{
+		stickerTag && (
+			<div class="project-territory__sticker" aria-label={stickerTag}>
+				<span class="project-territory__sticker-text">{stickerTag}</span>
+			</div>
+		)
+	}
 	<a class="project-territory__url" href={project.href} aria-label={`Visit ${project.name}`} target="_blank" rel="noopener noreferrer">
 		<span>{displayUrl}</span>
 		<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,6 +48,17 @@ const displayUrl = project.href.replace(/^https?:\/\//, '').replace(/\/$/, '');
 					project.title
 				) : (
 					<Fragment>
+						{logoSrc && (
+							<img
+								class="project-territory__logo"
+								src={logoSrc}
+								alt={logoAlt || `${project.name} logo`}
+								width="36"
+								height="36"
+								loading="lazy"
+								decoding="async"
+							/>
+						)}
 						<span class="project-territory__name">{project.name}</span>
 						{titleTail}
 					</Fragment>
@@ -52,9 +73,15 @@ const displayUrl = project.href.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 		{
 			imageSrc ? (
-				<figure class="project-territory__media">
+				<a
+					class="project-territory__media"
+					href={project.href}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label={`Visit ${project.name}`}
+				>
 					<img src={imageSrc} alt={imageAlt} loading="lazy" decoding="async" />
-				</figure>
+				</a>
 			) : project.featured ? (
 				/* The lattice illustrates the foundation itself, so it stays on the
 				   featured tile rather than repeating on every screenshot-less one. */
