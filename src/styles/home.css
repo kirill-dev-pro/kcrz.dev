@@ -706,10 +706,10 @@
 }
 
 /* The Bunderhost hero is wider than 16:9, so it letterboxes instead of
-   cropping; the backing matches the screenshot's own background (#0a0a0a). */
+   cropping; the backing matches the screenshot's own background (#040608). */
 [data-project-id="bunderhost"] .project-territory__media img {
   object-fit: contain;
-  background-color: #0a0a0a;
+  background-color: #040608;
 }
 
 /* Same for IQDOC; its canvas is #111111. */

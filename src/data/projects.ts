@@ -32,8 +32,9 @@ export const projects: Project[] = [
   {
     id: 'bunderhost',
     name: 'Bunderhost',
-    title: 'Bunderhost deploys Bunderstack applications.',
-    description: 'Git-connected deploys, managed resources, and preview environments for every pull request.',
+    title: 'Bunderhost ships Bunderstack projects in one click.',
+    description:
+      'Bunderhost reads your blueprint, provisions the application stack, deploys it to production, and puts logs, data, files, users, and background work in one operational dashboard.',
     accent: '#55e6ff',
     role: 'Infrastructure',
     status: 'Building',
