@@ -1,12 +1,29 @@
+---
+import { Image } from 'astro:assets';
+import avatarImg from '../../assets/avatar.jpg';
+---
+
 <section
   id="about"
   class="garden-hero"
   data-scene-section="hero"
   aria-labelledby="hero-title"
 >
-  <div class="growth-marker" aria-hidden="true">
-    <span class="growth-marker__branch growth-marker__branch--one"></span>
-    <span class="growth-marker__branch growth-marker__branch--two"></span>
+  <div class="garden-hero__portrait" aria-hidden="true">
+    <div class="garden-hero__portrait-frame">
+      <Image
+        src={avatarImg}
+        alt="Kirill — reduce complexity, touch grass"
+        class="garden-hero__portrait-image"
+        width={480}
+        height={480}
+        loading="eager"
+      />
+    </div>
+    <div class="garden-hero__portrait-traces">
+      <span class="garden-hero__portrait-trace garden-hero__portrait-trace--one"></span>
+      <span class="garden-hero__portrait-trace garden-hero__portrait-trace--two"></span>
+    </div>
   </div>
 
   <div class="garden-hero__copy">

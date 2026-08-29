@@ -183,61 +183,88 @@
   transform: translateX(0.35rem);
 }
 
-/* A cropped plate rather than a boxed object: it runs past the right viewport
-   edge and sits under the type, so the violet node lands clear of the headline. */
-.growth-marker {
+/* Hero Portrait Plate: Replaces the growth marker with a framed pixel art avatar */
+.garden-hero__portrait {
   position: absolute;
-  top: 52%;
-  /* Exactly the page gutter, so the plate reaches the viewport edge without
-	   ever pushing the document into horizontal scroll. */
-  right: calc(-1 * var(--page-gutter));
-  z-index: -1;
-  width: min(38vw, 30rem);
+  top: 50%;
+  right: 0;
+  z-index: 0;
+  width: clamp(10rem, 16vw, 14.5rem);
   aspect-ratio: 1;
-  border: 1px solid rgba(242, 245, 243, 0.22);
-  opacity: 1;
-  clip-path: polygon(18% 0, 100% 0, 100% 72%, 72% 100%, 0 100%, 0 20%);
-  /* Raised off centre so it clears the base row; it still tracks the centred
-	   copy block as the viewport height changes. */
-  transform: translateY(-60%);
+  transform: translateY(-56%);
+  pointer-events: auto;
 }
 
-.growth-marker::before,
-.growth-marker::after {
-  position: absolute;
-  content: "";
+.garden-hero__portrait-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 2px;
+  background: rgba(242, 245, 243, 0.22);
+  clip-path: polygon(
+    1.4rem 0,
+    100% 0,
+    100% calc(100% - 1.4rem),
+    calc(100% - 1.4rem) 100%,
+    0 100%,
+    0 1.4rem
+  );
+  box-shadow: 0 0 2.5rem rgba(11, 13, 18, 0.9);
+  transition:
+    background-color 220ms ease,
+    filter 220ms ease,
+    transform 220ms ease;
 }
 
-.growth-marker::before {
-  inset: 18%;
-  border: 1px solid rgba(155, 123, 255, 0.35);
-  clip-path: polygon(50% 0, 100% 45%, 70% 100%, 10% 82%, 0 22%);
-  transform: rotate(18deg);
-}
-
-.growth-marker::after {
-  inset: 44%;
+.garden-hero__portrait:hover .garden-hero__portrait-frame {
   background: var(--bunderstack-violet);
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-  box-shadow: 0 0 2rem rgba(155, 123, 255, 0.75);
+  filter: drop-shadow(0 0 24px rgba(155, 123, 255, 0.45));
+  transform: translateY(-3px);
 }
 
-.growth-marker__branch {
+.garden-hero__portrait-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  clip-path: polygon(
+    calc(1.4rem - 1px) 0,
+    100% 0,
+    100% calc(100% - (1.4rem - 1px)),
+    calc(100% - (1.4rem - 1px)) 100%,
+    0 100%,
+    0 calc(1.4rem - 1px)
+  );
+}
+
+.garden-hero__portrait-traces {
   position: absolute;
-  top: 49%;
-  left: 49%;
+  inset: -14%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.garden-hero__portrait-trace {
+  position: absolute;
   height: 1px;
-  background: rgba(242, 245, 243, 0.36);
+  background: rgba(242, 245, 243, 0.25);
   transform-origin: left;
 }
 
-.growth-marker__branch--one {
-  width: 44%;
-  transform: rotate(-34deg);
+.garden-hero__portrait-trace--one {
+  top: 25%;
+  left: -8%;
+  width: 48%;
+  transform: rotate(-35deg);
 }
-.growth-marker__branch--two {
-  width: 36%;
-  transform: rotate(128deg);
+
+.garden-hero__portrait-trace--two {
+  bottom: 12%;
+  right: -8%;
+  width: 42%;
+  transform: rotate(135deg);
 }
 
 .project-garden {
@@ -847,12 +874,12 @@
     justify-self: start;
     min-width: min(100%, 22rem);
   }
-  .growth-marker {
+  .garden-hero__portrait {
     top: auto;
     right: 2%;
     bottom: 10%;
-    width: 13rem;
-    opacity: 0.5;
+    width: clamp(7.5rem, 15vw, 10.5rem);
+    opacity: 0.65;
     transform: none;
   }
   .garden-hero__copy {
@@ -893,13 +920,12 @@
   .garden-hero__intro {
     max-width: 31rem;
   }
-  .growth-marker {
+  .garden-hero__portrait {
     right: 0;
     top: auto;
     bottom: 0.5rem;
-    width: 7.5rem;
-    overflow: hidden;
-    opacity: 0.34;
+    width: clamp(4.5rem, 14vw, 6.5rem);
+    opacity: 0.4;
     transform: none;
   }
   .project-garden {
