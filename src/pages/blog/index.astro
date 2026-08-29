@@ -4,110 +4,618 @@ import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { SITE_TITLE } from '../../consts';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ? 'ru' : 'en');
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: min(100% - 2 * var(--page-gutter), 60rem);
-				max-width: 100%;
+		<BaseHead
+			title={`Blog — ${SITE_TITLE}`}
+			description="Thoughts, architecture, backend systems and engineering logs by Kirill."
+		/>
+	</head>
+	<body class="blog-page">
+		<div class="hex-field" aria-hidden="true"></div>
+		<Header />
+		<main class="blog-catalog">
+			<header class="blog-catalog__heading">
+				<h1 data-blog-heading>
+					Thoughts, architecture & <span class="accent">engineering logs.</span>
+				</h1>
+				<p class="blog-catalog__intro" data-blog-intro>
+					Notes on distributed foundations, backend systems, and building tools.
+				</p>
+
+				<div class="blog-catalog__toolbar">
+					<div class="blog-lang-toggle" role="radiogroup" aria-label="Select blog language">
+						<button
+							type="button"
+							class="blog-lang-toggle__btn"
+							data-blog-lang="en"
+							role="radio"
+							aria-checked="true"
+						>
+							English
+						</button>
+						<button
+							type="button"
+							class="blog-lang-toggle__btn"
+							data-blog-lang="ru"
+							role="radio"
+							aria-checked="false"
+						>
+							Русский
+						</button>
+					</div>
+				</div>
+			</header>
+
+			<section class="blog-catalog__grid" aria-label="Articles list" data-blog-grid>
+				{
+					posts.map((post, index) => {
+						const lang = getLangCode(post.id);
+						const isFirst = index === 0;
+						return (
+							<article
+								class={`blog-card ${isFirst ? 'blog-card--featured' : ''}`}
+								data-blog-card
+								data-card-lang={lang}
+							>
+								<a class="blog-card__link" href={`/blog/${post.id}/`}>
+									<div class="blog-card__inner">
+										<div class="blog-card__content">
+											<div class="blog-card__meta">
+												<span class="blog-card__date">
+													<FormattedDate
+														date={post.data.pubDate}
+														locale={lang === 'ru' ? 'ru-ru' : 'en-us'}
+													/>
+												</span>
+											</div>
+											<h2 class="blog-card__title">{post.data.title}</h2>
+											<p class="blog-card__description">{post.data.description}</p>
+											<div class="blog-card__action">
+												<span data-blog-action>Read article</span>
+												<svg
+													viewBox="0 0 16 16"
+													fill="none"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<path
+														d="M5.5 3.5H12.5V10.5"
+														stroke="currentColor"
+														stroke-width="1.5"
+														stroke-linecap="square"
+													/>
+													<path
+														d="M12 4L3.5 12.5"
+														stroke="currentColor"
+														stroke-width="1.5"
+														stroke-linecap="square"
+													/>
+												</svg>
+											</div>
+										</div>
+										{post.data.heroImage && (
+											<div class="blog-card__media">
+												<Image
+													width={isFirst ? 960 : 720}
+													height={isFirst ? 540 : 405}
+													src={post.data.heroImage}
+													alt=""
+													loading={isFirst ? 'eager' : 'lazy'}
+													decoding="async"
+												/>
+											</div>
+										)}
+									</div>
+								</a>
+							</article>
+						);
+					})
+				}
+			</section>
+
+			<div class="blog-catalog__empty" data-blog-empty hidden>
+				<p data-blog-empty-text>No articles found for the selected language.</p>
+			</div>
+		</main>
+
+		<script>
+			import { initHexParallax } from '../../scripts/hex-parallax';
+			import { initTileProximity } from '../../scripts/tile-proximity';
+
+			const hexField = document.querySelector<HTMLElement>('.hex-field');
+			if (hexField) initHexParallax(hexField);
+
+			const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-blog-card]'));
+			if (cards.length > 0) initTileProximity(cards);
+
+			// Full blog interface translations dictionary
+			const i18n = {
+				en: {
+					docTitle: 'Blog — kcrz.dev',
+					heading: 'Thoughts, architecture & <span class="accent">engineering logs.</span>',
+					intro: 'Notes on distributed foundations, backend systems, and building tools.',
+					action: 'Read article',
+					empty: 'No articles found for the selected language.',
+				},
+				ru: {
+					docTitle: 'Блог — kcrz.dev',
+					heading: 'Мысли, архитектура и <span class="accent">инженерные заметки.</span>',
+					intro: 'Заметки о распределенных системах, архитектуре бэкенда и разработке инструментов.',
+					action: 'Читать статью',
+					empty: 'Статей на выбранном языке пока нет.',
+				},
+			};
+
+			const headingEl = document.querySelector<HTMLElement>('[data-blog-heading]');
+			const introEl = document.querySelector<HTMLElement>('[data-blog-intro]');
+			const emptyState = document.querySelector<HTMLElement>('[data-blog-empty]');
+			const emptyTextEl = document.querySelector<HTMLElement>('[data-blog-empty-text]');
+			const toggleButtons = Array.from(
+				document.querySelectorAll<HTMLButtonElement>('[data-blog-lang]'),
+			);
+
+			function getPreferredLanguage(): 'en' | 'ru' {
+				const params = new URLSearchParams(window.location.search);
+				const urlLang = params.get('lang')?.toLowerCase();
+				if (urlLang === 'ru' || urlLang === 'en') {
+					return urlLang;
+				}
+
+				const stored = localStorage.getItem('kcrz_blog_lang')?.toLowerCase();
+				if (stored === 'ru' || stored === 'en') {
+					return stored;
+				}
+
+				// Detect browser language
+				const userLangs = navigator.languages || [navigator.language || ''];
+				for (const lang of userLangs) {
+					if (lang.startsWith('ru') || lang.startsWith('uk') || lang.startsWith('be')) {
+						return 'ru';
+					}
+				}
+				return 'en';
 			}
-			ul {
+
+			function setBlogLanguage(selectedLang: 'en' | 'ru', updateUrl = true) {
+				const dict = i18n[selectedLang] || i18n.en;
+
+				// Update page title and UI texts
+				document.title = dict.docTitle;
+				if (headingEl) headingEl.innerHTML = dict.heading;
+				if (introEl) introEl.textContent = dict.intro;
+				if (emptyTextEl) emptyTextEl.textContent = dict.empty;
+
+				// Update all card action buttons
+				document.querySelectorAll<HTMLElement>('[data-blog-action]').forEach((el) => {
+					el.textContent = dict.action;
+				});
+
+				let visibleCount = 0;
+				let firstVisibleCard: HTMLElement | null = null;
+
+				cards.forEach((card) => {
+					const cardLang = card.dataset.cardLang;
+					const matches = cardLang === selectedLang;
+
+					if (matches) {
+						card.hidden = false;
+						card.classList.remove('is-hidden');
+						visibleCount++;
+						if (!firstVisibleCard) {
+							firstVisibleCard = card;
+						}
+					} else {
+						card.hidden = true;
+						card.classList.add('is-hidden');
+					}
+					card.classList.remove('blog-card--featured');
+				});
+
+				// Assign featured layout to the first visible card in selected language
+				if (firstVisibleCard) {
+					(firstVisibleCard as HTMLElement).classList.add('blog-card--featured');
+				}
+
+				// Update toggle buttons active state
+				toggleButtons.forEach((btn) => {
+					const lang = btn.dataset.blogLang;
+					const isActive = lang === selectedLang;
+					btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+					btn.classList.toggle('is-active', isActive);
+				});
+
+				if (emptyState) {
+					emptyState.hidden = visibleCount > 0;
+				}
+
+				if (updateUrl) {
+					localStorage.setItem('kcrz_blog_lang', selectedLang);
+					const url = new URL(window.location.href);
+					url.searchParams.set('lang', selectedLang);
+					window.history.replaceState(null, '', url.toString());
+				}
+			}
+
+			// Initialize on page load
+			const initialLang = getPreferredLanguage();
+			setBlogLanguage(initialLang, false);
+
+			// Attach click listeners
+			toggleButtons.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const lang = (btn.dataset.blogLang || 'en') as 'en' | 'ru';
+					setBlogLanguage(lang, true);
+				});
+			});
+		</script>
+
+		<style>
+			.blog-page {
+				position: relative;
+				overflow-x: clip;
+				background:
+					radial-gradient(
+						circle at 78% 12%,
+						rgba(155, 123, 255, 0.1),
+						transparent 23rem
+					),
+					var(--void);
+			}
+
+			.blog-catalog {
+				position: relative;
+				z-index: 1;
+				width: min(100% - 2 * var(--page-gutter), var(--content-max)) !important;
+				margin: 0 auto;
+				padding: 9rem 0 8rem !important;
+			}
+
+			.blog-catalog__heading {
+				margin-bottom: clamp(2.5rem, 5vw, 4rem);
+			}
+
+			.blog-catalog__heading h1 {
+				max-width: 22ch;
+				font-size: clamp(2.5rem, 5.6vw, 4.8rem);
+				font-weight: 800;
+				letter-spacing: -0.038em;
+				line-height: 1.02;
+			}
+
+			.blog-catalog__intro {
+				max-width: 38rem;
+				margin-top: 1.25rem;
+				color: var(--muted);
+				font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+				line-height: 1.6;
+			}
+
+			.blog-catalog__toolbar {
+				margin-top: 2rem;
+				display: flex;
+				align-items: center;
+				justify-content: flex-start;
+			}
+
+			/* Clean Pill Language Toggle */
+			.blog-lang-toggle {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.25rem;
+				padding: 0.25rem;
+				background-color: rgba(11, 13, 18, 0.88);
+				border: 1px solid rgba(242, 245, 243, 0.14);
+				border-radius: 9999px;
+				backdrop-filter: blur(16px);
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+			}
+
+			.blog-lang-toggle__btn {
+				padding: 0.42rem 1.15rem;
+				background: transparent;
+				border: 1px solid transparent;
+				border-radius: 9999px;
+				color: var(--muted);
+				font-family: var(--font-utility);
+				font-size: 0.78rem;
+				letter-spacing: 0.05em;
+				cursor: pointer;
+				transition:
+					color 160ms ease,
+					background-color 160ms ease,
+					border-color 160ms ease,
+					box-shadow 160ms ease;
+			}
+
+			.blog-lang-toggle__btn:hover {
+				color: var(--paper);
+			}
+
+			.blog-lang-toggle__btn.is-active {
+				color: #ffffff;
+				background-color: rgba(155, 123, 255, 0.22);
+				border-color: rgba(155, 123, 255, 0.55);
+				box-shadow:
+					0 2px 12px rgba(155, 123, 255, 0.25),
+					inset 0 1px 0 rgba(255, 255, 255, 0.12);
+			}
+
+			.blog-catalog__grid {
+				display: grid;
+				grid-template-columns: repeat(12, minmax(0, 1fr));
+				gap: clamp(1rem, 2vw, 1.8rem);
+			}
+
+			.blog-card {
+				--cut-sm: clamp(1rem, 1.5vw, 1.4rem);
+				--cut-md: clamp(1.4rem, 2.2vw, 2rem);
+				--cut-lg: clamp(2rem, 3.2vw, 2.8rem);
+				--card-pad: clamp(1.4rem, 2.8vw, 2.4rem);
+				--tile-glow: 320px;
+
+				position: relative;
+				z-index: 1;
+				grid-column: span 6;
+				display: flex;
+				flex-direction: column;
+				min-height: 100%;
+				padding: var(--card-pad);
+				overflow: hidden;
+				background-color: rgba(242, 245, 243, 0.14);
+				background-image: radial-gradient(
+					circle var(--tile-glow) at var(--px, -9999px) var(--py, -9999px),
+					var(--bunderstack-violet) 0,
+					transparent 100%
+				);
+				isolation: isolate;
+				clip-path: polygon(
+					0 0,
+					calc(100% - var(--cut-md)) 0,
+					100% var(--cut-md),
+					100% 100%,
+					var(--cut-md) 100%,
+					0 calc(100% - var(--cut-md))
+				);
+				transition:
+					background-color 180ms ease,
+					opacity 200ms ease,
+					z-index 0s linear 180ms;
+			}
+
+			.blog-card.is-hidden {
+				display: none !important;
+			}
+
+			.blog-card::before {
+				position: absolute;
+				inset: 1px;
+				z-index: -1;
+				background-color: var(--carbon);
+				clip-path: inherit;
+				content: '';
+				transition:
+					background-color 180ms ease,
+					box-shadow 180ms ease;
+			}
+
+			.blog-card--featured {
+				grid-column: 1 / -1;
+				margin-bottom: clamp(0.5rem, 1.5vw, 1.2rem);
+				clip-path: polygon(
+					var(--cut-lg) 0,
+					calc(100% - var(--cut-lg)) 0,
+					100% var(--cut-lg),
+					100% calc(100% - var(--cut-lg)),
+					calc(100% - var(--cut-lg)) 100%,
+					var(--cut-lg) 100%,
+					0 calc(100% - var(--cut-lg)),
+					0 var(--cut-lg)
+				);
+			}
+
+			.blog-card:hover,
+			.blog-card:focus-within {
+				z-index: 3;
+				background-color: var(--bunderstack-violet);
+				transition-delay: 0s;
+			}
+
+			.blog-card:hover::before,
+			.blog-card:focus-within::before {
+				background-color: color-mix(in srgb, var(--carbon) 93%, var(--bunderstack-violet));
+				box-shadow: inset 0 0 3.5rem color-mix(in srgb, var(--bunderstack-violet) 9%, transparent);
+			}
+
+			.blog-card__link {
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+				text-decoration: none;
+				color: inherit;
+			}
+
+			.blog-card__inner {
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+			}
+
+			.blog-card--featured .blog-card__inner {
+				display: grid;
+				grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr);
+				gap: clamp(2rem, 4vw, 4.5rem);
+				align-items: center;
+			}
+
+			.blog-card__content {
+				display: flex;
+				flex-direction: column;
+				flex: 1;
+			}
+
+			.blog-card__meta {
 				display: flex;
 				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
+				align-items: center;
+				gap: 0.65rem;
+				margin-bottom: 1.2rem;
+				font-family: var(--font-utility);
+				font-size: 0.68rem;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--muted);
 			}
-			ul li {
-				width: calc(50% - 1rem);
+
+			.blog-card__meta span {
+				display: inline-flex;
+				align-items: center;
+				padding: 0.35rem 0.85rem;
+				background-color: rgba(242, 245, 243, 0.08);
+				clip-path: polygon(
+					0.45rem 0,
+					calc(100% - 0.45rem) 0,
+					100% 50%,
+					calc(100% - 0.45rem) 100%,
+					0.45rem 100%,
+					0 50%
+				);
 			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
+
+			.blog-card__title {
+				margin: 0 0 1rem;
+				font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+				font-weight: 800;
+				letter-spacing: -0.028em;
+				line-height: 1.15;
+				transition: color 180ms ease;
 			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
+
+			.blog-card--featured .blog-card__title {
+				font-size: clamp(1.8rem, 3.2vw, 2.75rem);
+				letter-spacing: -0.03em;
+				line-height: 1.1;
 			}
-			ul li:first-child img {
-				width: 100%;
+
+			.blog-card:hover .blog-card__title,
+			.blog-card:focus-within .blog-card__title {
+				color: var(--bunderstack-violet);
 			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
+
+			.blog-card__description {
+				margin: 0 0 1.5rem;
+				color: var(--muted);
+				font-size: 1rem;
+				line-height: 1.58;
+				flex: 1;
 			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
+
+			.blog-card__action {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.6rem;
+				font-family: var(--font-accent);
+				font-size: 0.72rem;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--paper);
+				margin-top: auto;
+				padding-top: 0.5rem;
 			}
-			ul li a {
+
+			.blog-card__action svg {
+				width: 0.95rem;
+				height: 0.95rem;
+				transition: transform 180ms ease;
+			}
+
+			.blog-card:hover .blog-card__action,
+			.blog-card:focus-within .blog-card__action {
+				color: var(--bunderstack-violet);
+			}
+
+			.blog-card:hover .blog-card__action svg,
+			.blog-card:focus-within .blog-card__action svg {
+				transform: translate(0.2rem, -0.2rem);
+			}
+
+			.blog-card__media {
+				position: relative;
+				z-index: 1;
+				order: -1;
+				margin-bottom: 1.5rem;
+				padding: 1px;
+				background-color: rgba(242, 245, 243, 0.2);
+				filter: saturate(0.7) brightness(0.88);
+				opacity: 0.78;
+				clip-path: polygon(
+					1.3rem 0,
+					100% 0,
+					100% calc(100% - 1.3rem),
+					calc(100% - 1.3rem) 100%,
+					0 100%,
+					0 1.3rem
+				);
+				transition:
+					filter 220ms ease,
+					opacity 180ms ease,
+					transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+			}
+
+			.blog-card--featured .blog-card__media {
+				order: 0;
+				margin-bottom: 0;
+			}
+
+			.blog-card__media img {
 				display: block;
+				width: 100%;
+				aspect-ratio: 16 / 9;
+				object-fit: contain;
+				padding: clamp(1rem, 2vw, 1.6rem);
+				clip-path: inherit;
+				background: radial-gradient(circle at center, rgba(155, 123, 255, 0.08), var(--carbon));
 			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
+
+			.blog-card:hover .blog-card__media,
+			.blog-card:focus-within .blog-card__media {
+				filter: saturate(1) brightness(1);
+				opacity: 1;
+				transform: scale(1.02);
 			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
+
+			.blog-catalog__empty {
+				text-align: center;
+				padding: 4rem 2rem;
+				color: var(--muted);
+				font-family: var(--font-utility);
+				font-size: 0.95rem;
+				letter-spacing: 0.05em;
 			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
+
+			@media (max-width: 860px) {
+				.blog-card {
+					grid-column: span 12;
 				}
-				ul li {
-					width: 100%;
-					text-align: center;
+
+				.blog-card--featured .blog-card__inner {
+					grid-template-columns: 1fr;
+					gap: 1.75rem;
 				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
+
+				.blog-card--featured .blog-card__media {
+					order: -1;
 				}
 			}
 		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
 	</body>
 </html>

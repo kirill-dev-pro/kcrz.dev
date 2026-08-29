@@ -1,5 +1,8 @@
 ---
 import { SITE_TITLE } from "../consts";
+
+const pathname = Astro.url.pathname;
+const isBlogActive = pathname === '/blog' || pathname.startsWith('/blog/');
 ---
 
 <header class="site-header">
@@ -8,7 +11,7 @@ import { SITE_TITLE } from "../consts";
     <div class="site-header__links">
       <a href="/#about">About</a>
       <a href="/#work">Work</a>
-      <!-- <a href="/blog">Blog</a> -->
+      <a href="/blog" class:list={[{ 'is-active': isBlogActive }]}>Blog</a>
       <a
         class="site-header__x"
         href="https://x.com/kcrz_dev"
@@ -87,7 +90,8 @@ import { SITE_TITLE } from "../consts";
   }
 
   .site-header__links a:hover::after,
-  .site-header__links a:focus-visible::after {
+  .site-header__links a:focus-visible::after,
+  .site-header__links a.is-active::after {
     transform: scaleX(1);
   }
 

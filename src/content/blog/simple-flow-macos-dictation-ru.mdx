@@ -1,0 +1,171 @@
+---
+title: 'Как я собрал своё первое macOS-приложение за 2 промпта в Codex'
+description: 'История создания Simple Flow — легковесного приложения для голосовой диктовки через push-to-talk, написанного нейросетью, когда готовые приложения захотели денег.'
+pubDate: 'Aug 29 2026'
+heroImage: '../../assets/blog/simple-flow/app-icon.png'
+---
+
+import LinkCard from '../../components/LinkCard.astro';
+import LanguageSwitch from '../../components/LanguageSwitch.astro';
+import { Image } from 'astro:assets';
+import menubarImg from '../../assets/blog/simple-flow/menubar.png';
+import settingsImg from '../../assets/blog/simple-flow/settings.png';
+import appIcon from '../../assets/blog/simple-flow/app-icon.png';
+import wisprFlowIcon from '../../assets/blog/wispr-flow-icon.png';
+import macWhisperIcon from '../../assets/blog/macwhisper-icon.png';
+
+<LanguageSwitch
+	targetUrl="/blog/simple-flow-macos-dictation/"
+	targetLang="en"
+	label="This article is also available in English"
+	actionText="Read in English"
+/>
+
+> 🚀 **Скачать приложение**: готовый скомпилированный бандл уже доступен в [релизах на GitHub](https://github.com/kirill-dev-pro/simple-flow/releases/latest).
+
+Я уже давно не использую клавиатуру в 100% случаев. Гораздо чаще я просто надиктовываю текст голосом, ожидая быстрой и точной расшифровки. 
+
+В основном это нужно для общения с нейросетями. Моя жена даже шутит, что я теперь больше разговариваю с компьютером, чем с ней. И это, честно говоря, небезосновательные шутки: я искренне считаю, что для качественного выполнения задач — чем больше живого контекста, деталей и нюансов ты скормишь модели, тем лучше будет результат на выходе. Набирать такие объёмы текста руками на клавиатуре просто лень и неэффективно.
+
+Именно поэтому мне понадобилось приложение для диктовки. Не абстрактно «хорошее», а такое, которое работает ровно так, как удобно мне: зажал одну клавишу (push-to-talk), надиктовал поток мыслей, отпустил — и текст сразу появился там, где сейчас мигает курсор.
+
+## Что не так с готовыми приложениями
+
+На самом деле на Mac есть прекрасные решения. Я перепробовал разные варианты, и два из них мне действительно понравились.
+
+<LinkCard
+	title="Wispr Flow"
+	description="Быстрый облачный сервис для голосового набора с отличным распознаванием речи в реальном времени."
+	href="https://wisprflow.ai/"
+	domain="wisprflow.ai"
+	badge="Cloud Dictation"
+	icon={wisprFlowIcon}
+/>
+
+**Wispr Flow** работает суперски: приятный интерфейс, мгновенный отклик. Но бесплатный тариф быстро заканчивается жестким лимитом, а дальше сервис настойчиво просит регулярную ежемесячную подписку.
+
+Затем я пошел пробовать **MacWhisper**:
+
+<LinkCard
+	title="MacWhisper"
+	description="Популярное нативное приложение для macOS на базе локальных моделей OpenAI Whisper прямо на Apple Silicon."
+	href="https://macwhisper.com/"
+	domain="macwhisper.com"
+	badge="On-Device AI"
+	icon={macWhisperIcon}
+/>
+
+**MacWhisper** — отличная штука. Он бесплатно крутит модели прямо на железе мака, что здорово для приватности. Но мне хотелось гонять звук в быструю удалённую облачную модель, к которой у меня уже был готовый доступ по API. А возможность указать свой сервер и API-токен в MacWhisper спрятана за платной Pro-версией.
+
+У всех этих приложений есть свои несомненные плюсы, но есть и один общий минус: они хотят денег. 
+
+А в эпоху нейросетей, если приложение за базовую обвязку хочет денег — мы просто садимся и пишем свой vibecoding fork.
+
+## Как устроен Simple Flow
+
+Я не написал для этого приложения ни единой строчки кода на Swift. Всё от архитектуры до финальной сборки за меня сделал **OpenAI Codex** буквально за два промпта.
+
+Верхнеуровнево пайплайн состоит из четырех очевидных шагов:
+
+1. **Ловим хоткей**: приложение висит в Menu Bar и глобально перехватывает нажатие клавиши `Fn` (Globe) в режиме push-to-talk.
+2. **Пишем аудио**: пока клавиша зажата — звук с системного микрофона пишется в буфер.
+3. **Шлём в облако**: как только клавишу отпустили — аудио улетает на мой удалённый эндпоинт с авторизацией по токену.
+4. **Вставляем результат**: полученный текст через эмуляцию нажатия ⌘V моментально вставляется прямо в активное окно.
+
+## Разработка за 2 промпта в Codex
+
+### Промпт 1: Логика и стейт-машина
+
+В первом промпте я просто на словах описал эту цепочку: фоновый демон, клавиша `Fn`, запись аудио, запрос в сеть и вставка в фокус.
+
+Кодекс сам подтянул нужные фреймворки macOS (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) и собрал под это дело чистую функциональную стейт-машину:
+
+```swift
+public enum DictationPhase: Equatable, Sendable {
+    case idle
+    case recording
+    case transcribing
+    case feedback(FeedbackKind)
+}
+
+public struct DictationStateMachine: Sendable {
+    public private(set) var phase: DictationPhase = .idle
+
+    public mutating func handle(_ event: DictationEvent) -> [DictationEffect] {
+        switch (phase, event) {
+        case (.idle, .hotkeyPressed):
+            phase = .recording
+            return [.captureFocus, .startAudio]
+
+        case (.recording, .hotkeyReleased):
+            phase = .transcribing
+            return [.stopAndTranscribe]
+
+        case (.recording, .escapePressed):
+            phase = .idle
+            return [.cancelAudio, .returnToIdle]
+
+        case (.transcribing, .transcriptionInserted):
+            phase = .feedback(.inserted)
+            return []
+
+        case (.transcribing, .failed(let message)):
+            phase = .feedback(.error(message))
+            return []
+
+        default:
+            return []
+        }
+    }
+}
+```
+
+### Промпт 2: Окно настроек и финальный билд
+
+Во втором промпте я попросил добавить настройки для людей:
+- Статус в строке меню (`Ready` / `Recording`).
+- Нативное окно: выбор микрофона, переназначение хоткея, проверка разрешений macOS (Accessibility, Microphone) и автозапуск при логине.
+- Поля для ввода своего URL сервера и API-токена с сохранением в Keychain.
+- Скрипт сборки готового `.app` файла.
+
+Кодекс написал весь интерфейс, скомпилировал Swift-код прямо в терминале и отдал мне готовый бандл `SimpleFlow.app`.
+
+## Результат
+
+Я просто перетащил `SimpleFlow.app` в папку `/Applications`, вбил в настройках свой токен и сервер — и оно заработало с первого раза именно так, как я хотел.
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2.5rem 0;">
+	<div>
+		<Image src={menubarImg} alt="Simple Flow Menu Bar popover" />
+	</div>
+	<div>
+		<Image src={settingsImg} alt="Simple Flow Settings window" />
+	</div>
+</div>
+
+Я даже снял замеры потребления ресурсов через `top` прямо во время написания этой статьи:
+- **CPU: `0.0%`** в режиме ожидания (процесс находится в состоянии `sleeping` в RunLoop и просыпается только по прерыванию от глобального хука `CGEventTap`).
+- **RAM: `~50 MB`** (базовый оверхед системных фреймворков AppKit и SwiftUI).
+
+Приложение практически не ест память и процессор, тихо висит в трее и расшифровывает мои голосовые тирады в нейросети без всяких подписок и искусственных ограничений.
+
+## Исходный код и релизы на GitHub
+
+Я выложил весь исходный код проекта в открытый доступ:
+
+<LinkCard
+	title="Simple Flow on GitHub"
+	description="Open-source репозиторий на Swift под macOS: полная архитектура, стейт-машина, hotkey-монитор и инструкции по сборке."
+	href="https://github.com/kirill-dev-pro/simple-flow"
+	domain="github.com"
+	badge="Open Source"
+	icon={appIcon}
+/>
+
+Готовый архив с приложением (`SimpleFlow-v1.0.0.zip`) можно скачать напрямую из [раздела Releases на GitHub](https://github.com/kirill-dev-pro/simple-flow/releases/latest). Для установки достаточно распаковать архив и перетащить `SimpleFlow.app` в папку `/Applications`.
+
+## Мораль
+
+Если вам нужен удобный инструмент под свой собственный рабочий процесс — больше не нужно мириться с чужими пейволлами или тратить недели на изучение нативных SDK. 
+
+Четко формулируете задачу, отдаете в агент — и через пару минут забираете готовый софт.

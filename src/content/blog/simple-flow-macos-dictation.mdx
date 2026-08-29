@@ -1,0 +1,171 @@
+---
+title: 'Building My First macOS App with Two Codex Prompts'
+description: 'The story of Simple Flow — a lightweight push-to-talk voice dictation app for macOS built by an AI agent when existing tools asked for subscriptions.'
+pubDate: 'Aug 29 2026'
+heroImage: '../../assets/blog/simple-flow/app-icon.png'
+---
+
+import LinkCard from '../../components/LinkCard.astro';
+import LanguageSwitch from '../../components/LanguageSwitch.astro';
+import { Image } from 'astro:assets';
+import menubarImg from '../../assets/blog/simple-flow/menubar.png';
+import settingsImg from '../../assets/blog/simple-flow/settings.png';
+import appIcon from '../../assets/blog/simple-flow/app-icon.png';
+import wisprFlowIcon from '../../assets/blog/wispr-flow-icon.png';
+import macWhisperIcon from '../../assets/blog/macwhisper-icon.png';
+
+<LanguageSwitch
+	targetUrl="/blog/simple-flow-macos-dictation-ru/"
+	targetLang="ru"
+	label="Этот пост также доступен на русском языке"
+	actionText="Читать на русском"
+/>
+
+> 🚀 **Download the App**: A pre-built binary is available on [GitHub Releases](https://github.com/kirill-dev-pro/simple-flow/releases/latest).
+
+I haven't been using the keyboard 100% of the time for a while now. Much more often, I simply dictate text by voice, expecting fast and accurate speech-to-text.
+
+Mostly, this is for talking to AI models. My wife even jokes that I talk to my computer more than I talk to her nowadays. And frankly, those jokes aren't unfounded: I genuinely believe that for an LLM to deliver outstanding results, the more live context, nuance, and background details you feed into it, the better the output. Typing out walls of text by hand on a keyboard is just tedious and slow.
+
+That's precisely why I needed a voice dictation tool. Not some generic app, but something that behaves exactly how I want: hold down a single hotkey (push-to-talk), pour out my thoughts, release the key, and have the transcribed text appear immediately right where the cursor is blinking.
+
+## What Didn't Work with Existing Tools
+
+There are genuinely great dictation apps on macOS. I tested several options, and two stood out.
+
+<LinkCard
+	title="Wispr Flow"
+	description="A fast real-time AI speech-to-text dictation application with impressive accuracy and responsive audio feedback."
+	href="https://wisprflow.ai/"
+	domain="wisprflow.ai"
+	badge="Cloud Dictation"
+	icon={wisprFlowIcon}
+/>
+
+**Wispr Flow** is awesome: great interface, instantaneous response. But the free tier runs into harsh limits very quickly, after which it demands a recurring monthly subscription.
+
+Next, I gave **MacWhisper** a spin:
+
+<LinkCard
+	title="MacWhisper"
+	description="A popular native macOS application running local OpenAI Whisper models directly on Apple Silicon."
+	href="https://macwhisper.com/"
+	domain="macwhisper.com"
+	badge="On-Device AI"
+	icon={macWhisperIcon}
+/>
+
+**MacWhisper** is a solid product. It runs models on-device for free, which is fantastic for privacy. But I wanted to route audio to a fast remote cloud model where I already had dedicated API access. And the option to plug in a custom server URL and API token in MacWhisper is locked behind a paid Pro license.
+
+All of these apps are great in their own right, but they share one common drawback: they want money from you.
+
+And in the era of AI, when an app asks for a subscription for a basic wrapper — we just sit down and build our own vibecoding fork.
+
+## How Simple Flow Works
+
+I didn’t write a single line of Swift code myself for this app. Everything from initial architecture to the final compiled bundle was created by **OpenAI Codex** in just two prompts.
+
+At a high level, the whole pipeline comes down to four obvious steps:
+
+1. **Catch the hotkey**: The app sits quietly in the Menu Bar and globally detects holding down the `Fn` (Globe) key in push-to-talk mode.
+2. **Record audio**: While the key is held, sound from the system microphone is recorded into a buffer.
+3. **Send to the cloud**: The moment the key is released, the audio is sent asynchronously to my custom remote endpoint with token authorization.
+4. **Paste the result**: The returned transcript is immediately pasted into the active frontmost window via synthetic ⌘V keystrokes.
+
+## Development in Two Prompts
+
+### Prompt 1: Core Logic & State Machine
+
+In the first prompt, I simply described the chain of events in plain words: background daemon, `Fn` key hold, audio recording, network request, and active focus text insertion.
+
+Codex pulled in the necessary macOS frameworks (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) and wired together a clean, functional state machine:
+
+```swift
+public enum DictationPhase: Equatable, Sendable {
+    case idle
+    case recording
+    case transcribing
+    case feedback(FeedbackKind)
+}
+
+public struct DictationStateMachine: Sendable {
+    public private(set) var phase: DictationPhase = .idle
+
+    public mutating func handle(_ event: DictationEvent) -> [DictationEffect] {
+        switch (phase, event) {
+        case (.idle, .hotkeyPressed):
+            phase = .recording
+            return [.captureFocus, .startAudio]
+
+        case (.recording, .hotkeyReleased):
+            phase = .transcribing
+            return [.stopAndTranscribe]
+
+        case (.recording, .escapePressed):
+            phase = .idle
+            return [.cancelAudio, .returnToIdle]
+
+        case (.transcribing, .transcriptionInserted):
+            phase = .feedback(.inserted)
+            return []
+
+        case (.transcribing, .failed(let message)):
+            phase = .feedback(.error(message))
+            return []
+
+        default:
+            return []
+        }
+    }
+}
+```
+
+### Prompt 2: Settings Window & Production Build
+
+In the second prompt, I asked for standard usability features:
+- Live status in the menu bar (`Ready` / `Recording`).
+- A native settings window: microphone selection, custom shortcut recorder, macOS permission checks (Accessibility, Microphone), and launch at login.
+- Secure storage for the custom endpoint URL and API token.
+- Build scripts outputting a production-ready `.app` file.
+
+Codex wrote the UI, compiled the Swift code right in the terminal, and handed me `SimpleFlow.app`.
+
+## The Result
+
+I dragged `SimpleFlow.app` into `/Applications`, pasted my server endpoint and API token into the settings, and it worked on the very first try exactly the way I wanted.
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2.5rem 0;">
+	<div>
+		<Image src={menubarImg} alt="Simple Flow Menu Bar popover" />
+	</div>
+	<div>
+		<Image src={settingsImg} alt="Simple Flow Settings window" />
+	</div>
+</div>
+
+I even captured live system telemetry via `top` while writing this post:
+- **CPU: `0.0%`** in idle (the process remains in a `sleeping` state in the RunLoop and only wakes up on `CGEventTap` hotkey interrupts).
+- **RAM: `~50 MB`** (the baseline footprint of standard macOS AppKit and SwiftUI frameworks).
+
+It uses negligible CPU and memory, lives quietly in the menu bar, and lets me dictate long, contextual prompts into AI models without subscriptions or artificial paywalls.
+
+## Source Code & Releases on GitHub
+
+I've made the entire project open source on GitHub:
+
+<LinkCard
+	title="Simple Flow on GitHub"
+	description="Open-source native macOS push-to-talk client in Swift: full architecture, state machine, hotkey monitor, and build instructions."
+	href="https://github.com/kirill-dev-pro/simple-flow"
+	domain="github.com"
+	badge="Open Source"
+	icon={appIcon}
+/>
+
+You can download pre-built release binaries (`SimpleFlow-v1.0.0.zip`) directly from the [GitHub Releases page](https://github.com/kirill-dev-pro/simple-flow/releases/latest). To install, simply extract the archive and drag `SimpleFlow.app` into `/Applications`.
+
+## The Takeaway
+
+When you need software tailored to your specific workflow, you no longer have to compromise with third-party paywalls or spend weeks learning unfamiliar native SDKs.
+
+Clearly articulate what you need, pass it to an AI coding agent — and pick up a working app minutes later.
