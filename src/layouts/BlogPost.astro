@@ -5,13 +5,49 @@ import BaseHead from '../components/BaseHead.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & {
+	id?: string;
+};
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, id = '' } = Astro.props;
+
+function getLangFromId(postId: string): string {
+	const match = postId.match(/-(ru|es|de|fr|zh)$/);
+	return match ? match[1] : 'en';
+}
+
+const currentLang = getLangFromId(id);
+
+const backLabels: Record<string, string> = {
+	en: 'All engineering logs',
+	ru: 'Все инженерные заметки',
+	es: 'Todas las notas de ingeniería',
+	de: 'Alle Engineering-Notizen',
+	fr: 'Toutes les notes d’ingénierie',
+	zh: '返回所有工程日志',
+};
+
+const dateLocales: Record<string, string> = {
+	en: 'en-us',
+	ru: 'ru-ru',
+	es: 'es-es',
+	de: 'de-de',
+	fr: 'fr-fr',
+	zh: 'zh-cn',
+};
+
+const articleBadges: Record<string, string> = {
+	en: 'Article',
+	ru: 'Статья',
+	es: 'Artículo',
+	de: 'Artikel',
+	fr: 'Article',
+	zh: '文章',
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={currentLang}>
 	<head>
 		<BaseHead title={`${title} — Blog`} description={description} image={heroImage} />
 	</head>
@@ -21,7 +57,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		<Header />
 		<main class="blog-post-layout">
 			<nav class="blog-post__nav" aria-label="Breadcrumb">
-				<a class="blog-post__back-btn" href="/blog">
+				<a class="blog-post__back-btn" href={`/blog?lang=${currentLang}`}>
 					<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<path
 							d="M10.5 3.5L5.5 8L10.5 12.5"
@@ -30,21 +66,28 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 							stroke-linecap="square"
 						/>
 					</svg>
-					<span>All engineering logs</span>
+					<span>{backLabels[currentLang] || 'All engineering logs'}</span>
 				</a>
 			</nav>
 
 			<article class="blog-post">
 				<header class="blog-post__header">
 					<div class="blog-post__meta">
-						<span class="blog-post__badge">Article</span>
+						<span class="blog-post__badge">{articleBadges[currentLang] || 'Article'}</span>
 						<span class="blog-post__date">
-							<FormattedDate date={pubDate} />
+							<FormattedDate
+								date={pubDate}
+								locale={dateLocales[currentLang] || 'en-us'}
+							/>
 						</span>
 						{
 							updatedDate && (
 								<span class="blog-post__updated">
-									Updated <FormattedDate date={updatedDate} />
+									Updated{' '}
+									<FormattedDate
+										date={updatedDate}
+										locale={dateLocales[currentLang] || 'en-us'}
+									/>
 								</span>
 							)
 						}
@@ -74,7 +117,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				<footer class="blog-post__footer">
 					<hr class="blog-post__footer-divider" />
 					<div class="blog-post__footer-actions">
-						<a class="blog-post__back-btn" href="/blog">
+						<a class="blog-post__back-btn" href={`/blog?lang=${currentLang}`}>
 							<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 								<path
 									d="M10.5 3.5L5.5 8L10.5 12.5"
@@ -83,7 +126,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 									stroke-linecap="square"
 								/>
 							</svg>
-							<span>Back to all engineering logs</span>
+							<span>{backLabels[currentLang] || 'Back to all engineering logs'}</span>
 						</a>
 					</div>
 				</footer>
@@ -113,41 +156,54 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			.blog-post-layout {
 				position: relative;
 				z-index: 1;
-				width: min(100% - 2 * var(--page-gutter), 54rem) !important;
+				width: min(100% - 2 * var(--page-gutter), 48rem) !important;
 				margin: 0 auto;
-				padding: 7.5rem 0 8rem !important;
+				padding: 8rem 0 8rem !important;
 			}
 
 			.blog-post__nav {
+				display: flex;
+				align-items: center;
+				justify-content: flex-start;
 				margin-bottom: 2.5rem;
 			}
 
 			.blog-post__back-btn {
+				position: relative;
 				display: inline-flex;
 				align-items: center;
 				gap: 0.65rem;
 				min-height: 2.75rem;
 				padding: 0 1.25rem;
-				border: 1px solid rgba(242, 245, 243, 0.2);
-				background: rgba(11, 13, 18, 0.7);
+				background-color: rgba(242, 245, 243, 0.22);
 				color: var(--paper);
 				text-decoration: none;
 				font-family: var(--font-accent);
 				font-size: 0.68rem;
 				letter-spacing: 0.12em;
 				text-transform: uppercase;
+				isolation: isolate;
 				clip-path: polygon(
-					0.6rem 0,
+					0.65rem 0,
 					100% 0,
-					100% calc(100% - 0.6rem),
-					calc(100% - 0.6rem) 100%,
+					100% calc(100% - 0.65rem),
+					calc(100% - 0.65rem) 100%,
 					0 100%,
-					0 0.6rem
+					0 0.65rem
 				);
 				transition:
-					border-color 180ms ease,
 					background-color 180ms ease,
 					color 180ms ease;
+			}
+
+			.blog-post__back-btn::before {
+				position: absolute;
+				inset: 1px;
+				z-index: -1;
+				background-color: var(--carbon);
+				clip-path: inherit;
+				content: '';
+				transition: background-color 180ms ease;
 			}
 
 			.blog-post__back-btn svg {
@@ -158,9 +214,13 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 
 			.blog-post__back-btn:hover,
 			.blog-post__back-btn:focus-visible {
-				border-color: var(--bunderstack-violet);
-				background: rgba(155, 123, 255, 0.1);
-				color: var(--paper);
+				background-color: var(--bunderstack-violet);
+				color: #ffffff;
+			}
+
+			.blog-post__back-btn:hover::before,
+			.blog-post__back-btn:focus-visible::before {
+				background-color: color-mix(in srgb, var(--carbon) 90%, var(--bunderstack-violet));
 			}
 
 			.blog-post__back-btn:hover svg,
@@ -215,14 +275,6 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				color: var(--paper);
 			}
 
-			.blog-post__lead {
-				font-size: clamp(1.15rem, 1.8vw, 1.35rem);
-				line-height: 1.55;
-				color: var(--muted);
-				margin: 0 0 2.5rem;
-				max-width: 48rem;
-			}
-
 			.blog-post__hero-media {
 				position: relative;
 				margin-top: 2rem;
@@ -251,132 +303,94 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			/* Prose article typography */
 			.prose {
 				color: var(--paper);
-				font-size: clamp(1.05rem, 1.3vw, 1.15rem);
-				line-height: 1.76;
+				font-size: clamp(1.05rem, 1.4vw, 1.15rem);
+				line-height: 1.75;
 			}
 
 			.prose :global(p) {
-				margin: 0 0 1.65em;
-			}
-
-			.prose :global(h1),
-			.prose :global(h2),
-			.prose :global(h3),
-			.prose :global(h4),
-			.prose :global(h5),
-			.prose :global(h6) {
-				color: var(--paper);
-				font-family: var(--font-display);
-				font-weight: 800;
-				letter-spacing: -0.03em;
-				line-height: 1.12;
-			}
-
-			.prose :global(h1) {
-				font-size: clamp(2rem, 4vw, 3rem);
-				margin: 3.5rem 0 1.25rem;
+				margin: 1.5rem 0;
+				color: rgba(242, 245, 243, 0.88);
 			}
 
 			.prose :global(h2) {
-				font-size: clamp(1.65rem, 3vw, 2.3rem);
-				margin: 3.25rem 0 1.15rem;
-				padding-bottom: 0.4rem;
-				border-bottom: 1px solid rgba(242, 245, 243, 0.12);
+				margin: 3.5rem 0 1.25rem;
+				font-size: clamp(1.75rem, 2.8vw, 2.35rem);
+				font-weight: 800;
+				letter-spacing: -0.03em;
+				line-height: 1.15;
+				color: var(--paper);
 			}
 
 			.prose :global(h3) {
-				font-size: clamp(1.35rem, 2.2vw, 1.75rem);
-				margin: 2.5rem 0 0.9rem;
+				margin: 2.5rem 0 1rem;
+				font-size: clamp(1.35rem, 2vw, 1.65rem);
+				font-weight: 800;
+				letter-spacing: -0.025em;
+				line-height: 1.2;
+				color: var(--paper);
 			}
 
-			.prose :global(h4) {
-				font-size: 1.25rem;
-				margin: 2rem 0 0.75rem;
+			.prose :global(ul),
+			.prose :global(ol) {
+				margin: 1.5rem 0;
+				padding-left: 1.5rem;
+				color: rgba(242, 245, 243, 0.84);
 			}
 
-			.prose :global(strong),
-			.prose :global(b) {
-				color: #ffffff;
-				font-weight: 700;
+			.prose :global(li) {
+				margin: 0.6rem 0;
+				line-height: 1.65;
+			}
+
+			.prose :global(blockquote) {
+				margin: 2.2rem 0;
+				padding: 1rem 1.5rem;
+				background-color: rgba(155, 123, 255, 0.06);
+				border-left: 3px solid var(--bunderstack-violet);
+				color: var(--paper);
+				font-style: normal;
+			}
+
+			.prose :global(blockquote p) {
+				margin: 0;
+			}
+
+			.prose :global(code) {
+				font-family: var(--font-accent);
+				font-size: 0.88em;
+				padding: 0.2em 0.45em;
+				background-color: rgba(242, 245, 243, 0.08);
+				border: 1px solid rgba(242, 245, 243, 0.12);
+				border-radius: 4px;
+				color: var(--bunderstack-violet);
+			}
+
+			.prose :global(pre) {
+				margin: 2rem 0;
+				padding: 1.25rem 1.5rem;
+				background-color: var(--carbon) !important;
+				border: 1px solid rgba(242, 245, 243, 0.12);
+				border-radius: 8px;
+				overflow-x: auto;
+			}
+
+			.prose :global(pre code) {
+				background-color: transparent;
+				border: 0;
+				padding: 0;
+				color: inherit;
+				font-size: 0.9em;
 			}
 
 			.prose :global(a) {
 				color: var(--bunderstack-violet);
 				text-decoration: underline;
-				text-underline-offset: 0.22em;
-				transition: color 160ms ease;
+				text-underline-offset: 3px;
+				transition: color 180ms ease;
 			}
 
 			.prose :global(a:hover) {
-				color: #c4b5fd;
-			}
-
-			.prose :global(code) {
-				padding: 0.18em 0.42em;
-				border-radius: 4px;
-				background: rgba(242, 245, 243, 0.08);
-				border: 1px solid rgba(242, 245, 243, 0.12);
-				font-family: var(--font-utility);
-				font-size: 0.88em;
-				color: var(--paper);
-			}
-
-			.prose :global(pre) {
-				margin: 2rem 0;
-				padding: 1.35rem 1.6rem;
-				background-color: var(--carbon);
-				border: 1px solid rgba(242, 245, 243, 0.14);
-				border-radius: 8px;
-				overflow-x: auto;
-				font-family: var(--font-utility);
-				font-size: 0.92rem;
-				line-height: 1.62;
-			}
-
-			.prose :global(pre code) {
-				all: unset;
-				font-family: var(--font-utility);
-			}
-
-			.prose :global(blockquote) {
-				margin: 2.25rem 0;
-				padding: 1.1rem 1.6rem;
-				border-left: 3px solid var(--bunderstack-violet);
-				background: rgba(155, 123, 255, 0.06);
-				color: var(--paper);
-			}
-
-			.prose :global(blockquote p:last-child) {
-				margin-bottom: 0;
-			}
-
-			.prose :global(ul),
-			.prose :global(ol) {
-				margin: 1.4rem 0 1.8rem;
-				padding-left: 1.8rem;
-			}
-
-			.prose :global(li) {
-				margin-bottom: 0.65rem;
-			}
-
-			.prose :global(li::marker) {
-				color: var(--bunderstack-violet);
-			}
-
-			.prose :global(img) {
-				display: block;
-				max-width: 100%;
-				height: auto;
-				margin: 2.5rem auto;
-				border-radius: 6px;
-				border: 1px solid rgba(242, 245, 243, 0.14);
-			}
-
-			.prose :global(hr) {
-				margin: 3.5rem 0;
-				border: 0;
-				border-top: 1px solid rgba(242, 245, 243, 0.14);
+				color: #ffffff;
 			}
 
 			.prose :global(table) {

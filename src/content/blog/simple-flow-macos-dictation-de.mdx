@@ -1,0 +1,163 @@
+---
+title: 'Wie ich meine erste macOS-App mit nur 2 Prompts in Codex gebaut habe'
+description: 'Die Geschichte von Simple Flow: Eine leichtgewichtige Push-to-Talk-Sprachdiktat-App für macOS, vollständig von einem KI-Agenten entwickelt, als kommerzielle Tools Abonnements verlangten.'
+pubDate: 'Aug 29 2026'
+heroImage: '../../assets/blog/simple-flow/app-icon.png'
+---
+
+import LinkCard from '../../components/LinkCard.astro';
+import { Image } from 'astro:assets';
+import menubarImg from '../../assets/blog/simple-flow/menubar.png';
+import settingsImg from '../../assets/blog/simple-flow/settings.png';
+import appIcon from '../../assets/blog/simple-flow/app-icon.png';
+import wisprFlowIcon from '../../assets/blog/wispr-flow-icon.png';
+import macWhisperIcon from '../../assets/blog/macwhisper-icon.png';
+
+> 🚀 **App herunterladen**: Das fertige kompilierte Bundle steht direkt auf [GitHub Releases](https://github.com/kirill-dev-pro/simple-flow/releases/latest) bereit.
+
+Ich benutze die Tastatur schon lange nicht mehr zu 100 %. Viel häufiger diktiere ich Texte einfach per Sprache und erwarte eine schnelle, präzise Transkription.
+
+Hauptsächlich nutze ich das für die Kommunikation mit KI-Modellen. Meine Frau scherzt sogar, dass ich inzwischen mehr mit meinem Computer rede als mit ihr. Und ehrlich gesagt ist das nicht unbegründet: Ich bin der festen Überzeugung, dass ein Sprachmodell umso bessere Ergebnisse liefert, je mehr lebendigen Kontext, Nuancen und Details man hineingibt. All das von Hand auf der Tastatur zu tippen, ist schlicht mühsam und ineffizient.
+
+Genau deshalb brauchte ich ein Sprachdiktat-Tool. Keine 08/15-App, sondern etwas, das exakt so funktioniert, wie ich es will: eine Taste gedrückt halten (`Fn / Globe` im Push-to-Talk-Modus), Gedanken einsprechen, loslassen – und der transkribierte Text erscheint sofort genau dort, wo der Cursor blinkt.
+
+## Was an bestehenden Lösungen störte
+
+Auf dem Mac gibt es bereits hervorragende Lösungen. Ich habe mehrere getestet, und zwei davon gefielen mir wirklich gut.
+
+<LinkCard
+	title="Wispr Flow"
+	description="Schneller Cloud-Dienst für Spracheingabe mit hervorragender Erkennungsgenauigkeit in Echtzeit."
+	href="https://wisprflow.ai/"
+	domain="wisprflow.ai"
+	badge="Cloud Dictation"
+	icon={wisprFlowIcon}
+/>
+
+**Wispr Flow** funktioniert klasse: ansprechende Benutzeroberfläche, sofortige Reaktion. Doch der kostenlose Tarif stößt schnell an harte Limits, und danach verlangt der Dienst ein monatliches Abonnement.
+
+Dann habe ich **MacWhisper** ausprobiert:
+
+<LinkCard
+	title="MacWhisper"
+	description="Beliebte native macOS-Anwendung basierend auf lokalen OpenAI-Whisper-Modellen direkt auf Apple Silicon."
+	href="https://macwhisper.com/"
+	domain="macwhisper.com"
+	badge="On-Device AI"
+	icon={macWhisperIcon}
+/>
+
+**MacWhisper** ist ein großartiges Produkt. Es führt Modelle lokal und kostenlos auf dem Mac aus, was für den Datenschutz optimal ist. Allerdings wollte ich mein Audio an ein schnelles, dediziertes Remote-Cloud-Modell senden, zu dem ich bereits API-Zugang hatte. Und in MacWhisper ist das Eintragen eines eigenen API-Endpunkts und Tokens der kostenpflichtigen Pro-Version vorbehalten.
+
+All diese Apps haben ihre Stärken, aber einen entscheidenden Nachteil: Sie wollen dein Geld.
+
+Und im Zeitalter der KI gilt: Wenn eine App für einen einfachen Wrapper Geld verlangt, setzen wir uns einfach hin und bauen unseren eigenen Vibecoding-Fork.
+
+## Wie Simple Flow aufgebaut ist
+
+Ich habe für diese Anwendung keine einzige Zeile Swift-Code selbst geschrieben. Die gesamte Architektur, Logik und das fertige Release-Bundle wurden von **OpenAI Codex** in nur zwei Prompts erstellt.
+
+Auf hoher Ebene besteht die Pipeline aus vier einfachen Schritten:
+
+1. **Hotkey abfangen**: Die App läuft unauffällig in der Menüleiste und fängt das Drücken der `Fn`-Taste (Globe) global im Push-to-Talk-Modus ab.
+2. **Audio aufnehmen**: Solange die Taste gehalten wird, wird das Mikrofonsignal in einen temporären Puffer geschrieben.
+3. **In die Cloud senden**: Sobald die Taste losgelassen wird, wird das Audio asynchron an meinen API-Endpunkt mit Token-Authentifizierung gesendet.
+4. **Ergebnis einfügen**: Der transkribierte Text wird sofort über synthetische `⌘V`-Tastaturanschläge in das aktive Fenster eingefügt.
+
+## Entwicklung in 2 Prompts mit Codex
+
+### Prompt 1: Kernlogik und State Machine
+
+Im ersten Prompt habe ich die Anforderungen einfach in eigenen Worten beschrieben: Hintergrund-Daemon, `Fn`-Taste, Audioaufnahme, Netzwerk-Request und Texteinfügung.
+
+Codex wählte die passenden macOS-Systemframeworks (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) und baute eine saubere, deterministische State Machine:
+
+```swift
+public enum DictationPhase: Equatable, Sendable {
+    case idle
+    case recording
+    case transcribing
+    case feedback(FeedbackKind)
+}
+
+public struct DictationStateMachine: Sendable {
+    public private(set) var phase: DictationPhase = .idle
+
+    public mutating func handle(_ event: DictationEvent) -> [DictationEffect] {
+        switch (phase, event) {
+        case (.idle, .hotkeyPressed):
+            phase = .recording
+            return [.captureFocus, .startAudio]
+
+        case (.recording, .hotkeyReleased):
+            phase = .transcribing
+            return [.stopAndTranscribe]
+
+        case (.recording, .escapePressed):
+            phase = .idle
+            return [.cancelAudio, .returnToIdle]
+
+        case (.transcribing, .transcriptionInserted):
+            phase = .feedback(.inserted)
+            return []
+
+        case (.transcribing, .failed(let message)):
+            phase = .feedback(.error(message))
+            return []
+
+        default:
+            return []
+        }
+    }
+}
+```
+
+### Prompt 2: Einstellungsfenster und Produktions-Build
+
+Im zweiten Prompt bat ich um eine vollwertige Benutzeroberfläche:
+- Statusanzeige in der Menüleiste (`Ready` / `Recording`).
+- Natives Einstellungsfenster: Mikrofonauswahl, Hotkey-Recorder, Berechtigungsprüfungen (Accessibility, Microphone) und Autostart bei der Anmeldung.
+- Sichere Speicherung von Server-URL und API-Token im macOS-Schlüsselbund (Keychain).
+- Build-Skripte zur Erstellung der fertigen `.app`-Datei.
+
+Codex schrieb das gesamte UI, kompilierte den Swift-Code direkt im Terminal und übergab mir die fertige `SimpleFlow.app`.
+
+## Das Ergebnis
+
+Ich habe `SimpleFlow.app` einfach in meinen `/Applications`-Ordner gezogen, Token und Server-URL in den Einstellungen hinterlegt – und es funktionierte auf Anhieb perfekt.
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2.5rem 0;">
+	<div>
+		<Image src={menubarImg} alt="Simple Flow Menu Bar popover" />
+	</div>
+	<div>
+		<Image src={settingsImg} alt="Simple Flow Settings window" />
+	</div>
+</div>
+
+Ich habe die Ressourcennutzung sogar während des Schreibens dieses Beitrags mit `top` gemessen:
+- **CPU: `0.0%`** im Ruhezustand (der Prozess schläft im `RunLoop` und wacht nur bei `CGEventTap`-Hotkey-Interrupts auf).
+- **RAM: `~50 MB`** (der standardmäßige Basisspeicher der AppKit- und SwiftUI-Systemframeworks).
+
+Die App verbraucht praktisch keine Systemressourcen, sitzt ruhig im Hintergrund und transkribiert meine Diktate ohne Abos oder Beschränkungen.
+
+## Quellcode und Releases auf GitHub
+
+Ich habe den gesamten Quellcode des Projekts als Open Source veröffentlicht:
+
+<LinkCard
+	title="Simple Flow auf GitHub"
+	description="Open-Source-Repository in Swift für macOS: vollständige Architektur, State Machine, Hotkey-Monitor und Build-Anleitung."
+	href="https://github.com/kirill-dev-pro/simple-flow"
+	domain="github.com"
+	badge="Open Source"
+	icon={appIcon}
+/>
+
+Das fertige Archiv (`SimpleFlow-v1.0.0.zip`) kann direkt von der [GitHub-Releases-Seite](https://github.com/kirill-dev-pro/simple-flow/releases/latest) heruntergeladen werden. Zur Installation einfach entpacken und `SimpleFlow.app` in den Ordner `/Applications` ziehen.
+
+## Fazit
+
+Wenn du ein Tool brauchst, das exakt auf deinen persönlichen Workflow zugeschnitten ist, musst du dich nicht mehr mit Paywalls abfinden oder Wochen damit verbringen, neue native SDKs zu lernen.
+
+Formuliere deine Anforderungen präzise, übergib sie an einen KI-Agenten in Codex – und halte wenige Minuten später eine fertige native Anwendung in den Händen.

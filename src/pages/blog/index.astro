@@ -10,7 +10,23 @@ const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
-const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ? 'ru' : 'en');
+const getLangCode = (id: string) => {
+	if (id.endsWith('-ru') || id.includes('-ru/')) return 'ru';
+	if (id.endsWith('-es') || id.includes('-es/')) return 'es';
+	if (id.endsWith('-de') || id.includes('-de/')) return 'de';
+	if (id.endsWith('-fr') || id.includes('-fr/')) return 'fr';
+	if (id.endsWith('-zh') || id.includes('-zh/')) return 'zh';
+	return 'en';
+};
+
+const dateLocales: Record<string, string> = {
+	en: 'en-us',
+	ru: 'ru-ru',
+	es: 'es-es',
+	de: 'de-de',
+	fr: 'fr-fr',
+	zh: 'zh-cn',
+};
 ---
 
 <!doctype html>
@@ -41,6 +57,7 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 							data-blog-lang="en"
 							role="radio"
 							aria-checked="true"
+							title="English"
 						>
 							English
 						</button>
@@ -50,8 +67,49 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 							data-blog-lang="ru"
 							role="radio"
 							aria-checked="false"
+							title="Русский"
 						>
 							Русский
+						</button>
+						<button
+							type="button"
+							class="blog-lang-toggle__btn"
+							data-blog-lang="es"
+							role="radio"
+							aria-checked="false"
+							title="Español"
+						>
+							Español
+						</button>
+						<button
+							type="button"
+							class="blog-lang-toggle__btn"
+							data-blog-lang="de"
+							role="radio"
+							aria-checked="false"
+							title="Deutsch"
+						>
+							Deutsch
+						</button>
+						<button
+							type="button"
+							class="blog-lang-toggle__btn"
+							data-blog-lang="fr"
+							role="radio"
+							aria-checked="false"
+							title="Français"
+						>
+							Français
+						</button>
+						<button
+							type="button"
+							class="blog-lang-toggle__btn"
+							data-blog-lang="zh"
+							role="radio"
+							aria-checked="false"
+							title="中文"
+						>
+							中文
 						</button>
 					</div>
 				</div>
@@ -75,7 +133,7 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 												<span class="blog-card__date">
 													<FormattedDate
 														date={post.data.pubDate}
-														locale={lang === 'ru' ? 'ru-ru' : 'en-us'}
+														locale={dateLocales[lang] || 'en-us'}
 													/>
 												</span>
 											</div>
@@ -138,8 +196,11 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 			const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-blog-card]'));
 			if (cards.length > 0) initTileProximity(cards);
 
-			// Full blog interface translations dictionary
-			const i18n = {
+			// Full blog interface translations dictionary for all 6 languages
+			const i18n: Record<
+				string,
+				{ docTitle: string; heading: string; intro: string; action: string; empty: string }
+			> = {
 				en: {
 					docTitle: 'Blog — kcrz.dev',
 					heading: 'Thoughts, architecture & <span class="accent">engineering logs.</span>',
@@ -154,6 +215,34 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 					action: 'Читать статью',
 					empty: 'Статей на выбранном языке пока нет.',
 				},
+				es: {
+					docTitle: 'Blog — kcrz.dev',
+					heading: 'Reflexiones, arquitectura y <span class="accent">notas de ingeniería.</span>',
+					intro: 'Apuntes sobre sistemas distribuidos, arquitectura backend y creación de herramientas.',
+					action: 'Leer artículo',
+					empty: 'No se encontraron artículos para el idioma seleccionado.',
+				},
+				de: {
+					docTitle: 'Blog — kcrz.dev',
+					heading: 'Gedanken, Architektur & <span class="accent">Engineering-Notizen.</span>',
+					intro: 'Notizen zu verteilten Systemen, Backend-Architektur und Software-Werkzeugen.',
+					action: 'Artikel lesen',
+					empty: 'Keine Artikel für die ausgewählte Sprache gefunden.',
+				},
+				fr: {
+					docTitle: 'Blog — kcrz.dev',
+					heading: 'Réflexions, architecture & <span class="accent">notes d’ingénierie.</span>',
+					intro: 'Notes sur les systèmes distribués, l’architecture backend et la création d’outils.',
+					action: 'Lire l’article',
+					empty: 'Aucun article trouvé pour la langue sélectionnée.',
+				},
+				zh: {
+					docTitle: '博客 — kcrz.dev',
+					heading: '技术思考、系统架构与<span class="accent">工程日志。</span>',
+					intro: '关于分布式底层、后端架构与开发工具构建的工程记录。`',
+					action: '阅读文章',
+					empty: '所选语言暂无文章。',
+				},
 			};
 
 			const headingEl = document.querySelector<HTMLElement>('[data-blog-heading]');
@@ -164,29 +253,34 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 				document.querySelectorAll<HTMLButtonElement>('[data-blog-lang]'),
 			);
 
-			function getPreferredLanguage(): 'en' | 'ru' {
+			const supportedLangs = ['en', 'ru', 'es', 'de', 'fr', 'zh'];
+
+			function getPreferredLanguage(): string {
 				const params = new URLSearchParams(window.location.search);
 				const urlLang = params.get('lang')?.toLowerCase();
-				if (urlLang === 'ru' || urlLang === 'en') {
+				if (urlLang && supportedLangs.includes(urlLang)) {
 					return urlLang;
 				}
 
 				const stored = localStorage.getItem('kcrz_blog_lang')?.toLowerCase();
-				if (stored === 'ru' || stored === 'en') {
+				if (stored && supportedLangs.includes(stored)) {
 					return stored;
 				}
 
 				// Detect browser language
 				const userLangs = navigator.languages || [navigator.language || ''];
 				for (const lang of userLangs) {
-					if (lang.startsWith('ru') || lang.startsWith('uk') || lang.startsWith('be')) {
-						return 'ru';
-					}
+					const l = lang.toLowerCase();
+					if (l.startsWith('ru') || l.startsWith('uk') || l.startsWith('be')) return 'ru';
+					if (l.startsWith('es')) return 'es';
+					if (l.startsWith('de')) return 'de';
+					if (l.startsWith('fr')) return 'fr';
+					if (l.startsWith('zh')) return 'zh';
 				}
 				return 'en';
 			}
 
-			function setBlogLanguage(selectedLang: 'en' | 'ru', updateUrl = true) {
+			function setBlogLanguage(selectedLang: string, updateUrl = true) {
 				const dict = i18n[selectedLang] || i18n.en;
 
 				// Update page title and UI texts
@@ -253,7 +347,7 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 			// Attach click listeners
 			toggleButtons.forEach((btn) => {
 				btn.addEventListener('click', () => {
-					const lang = (btn.dataset.blogLang || 'en') as 'en' | 'ru';
+					const lang = btn.dataset.blogLang || 'en';
 					setBlogLanguage(lang, true);
 				});
 			});
@@ -285,11 +379,11 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 			}
 
 			.blog-catalog__heading h1 {
-				max-width: 22ch;
-				font-size: clamp(2.5rem, 5.6vw, 4.8rem);
+				max-width: 24ch;
+				font-size: clamp(2.3rem, 5.2vw, 4.6rem);
 				font-weight: 800;
 				letter-spacing: -0.038em;
-				line-height: 1.02;
+				line-height: 1.05;
 			}
 
 			.blog-catalog__intro {
@@ -310,6 +404,7 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 			/* Clean Pill Language Toggle */
 			.blog-lang-toggle {
 				display: inline-flex;
+				flex-wrap: wrap;
 				align-items: center;
 				gap: 0.25rem;
 				padding: 0.25rem;
@@ -321,13 +416,13 @@ const getLangCode = (id: string) => (id.endsWith('-ru') || id.includes('-ru/') ?
 			}
 
 			.blog-lang-toggle__btn {
-				padding: 0.42rem 1.15rem;
+				padding: 0.38rem 0.95rem;
 				background: transparent;
 				border: 1px solid transparent;
 				border-radius: 9999px;
 				color: var(--muted);
 				font-family: var(--font-utility);
-				font-size: 0.78rem;
+				font-size: 0.74rem;
 				letter-spacing: 0.05em;
 				cursor: pointer;
 				transition:

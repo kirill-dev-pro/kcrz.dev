@@ -1,0 +1,163 @@
+---
+title: 'Cómo creé mi primera app para macOS con solo 2 prompts en Codex'
+description: 'La historia de Simple Flow: una app nativa y ligera de dictado por voz push-to-talk para macOS creada por un agente de IA cuando las apps existentes pedían suscripciones.'
+pubDate: 'Aug 29 2026'
+heroImage: '../../assets/blog/simple-flow/app-icon.png'
+---
+
+import LinkCard from '../../components/LinkCard.astro';
+import { Image } from 'astro:assets';
+import menubarImg from '../../assets/blog/simple-flow/menubar.png';
+import settingsImg from '../../assets/blog/simple-flow/settings.png';
+import appIcon from '../../assets/blog/simple-flow/app-icon.png';
+import wisprFlowIcon from '../../assets/blog/wispr-flow-icon.png';
+import macWhisperIcon from '../../assets/blog/macwhisper-icon.png';
+
+> 🚀 **Descargar la aplicación**: El binario compilado listo para usar está disponible en [GitHub Releases](https://github.com/kirill-dev-pro/simple-flow/releases/latest).
+
+Hace tiempo que dejé de usar el teclado el 100% del tiempo. Con mucha más frecuencia, simplemente dicto texto por voz, esperando una transcripción rápida y precisa.
+
+Principalmente, esto es para interactuar con modelos de IA. Mi esposa incluso bromea diciendo que ahora hablo más con mi ordenador que con ella. Y honestamente, no le falta razón: creo firmemente que para que una IA entregue resultados sobresalientes, cuanto más contexto, matices y detalles en vivo le aportes, mejor será el resultado. Escribir todo eso a mano en el teclado es simplemente tedioso y lento.
+
+Por eso necesitaba una herramienta de dictado por voz. No una app genérica, sino algo que funcionara exactamente como yo quería: mantener presionada una tecla (`Fn / Globe` en modo push-to-talk), soltar mis pensamientos, soltar la tecla y ver cómo el texto transcrito aparece de inmediato justo donde parpadea el cursor.
+
+## Lo que no funcionó con las soluciones existentes
+
+En macOS existen opciones excelentes. Probé varias alternativas y dos me parecieron realmente buenas.
+
+<LinkCard
+	title="Wispr Flow"
+	description="Servicio rápido en la nube para dictado por voz con excelente precisión de reconocimiento en tiempo real."
+	href="https://wisprflow.ai/"
+	domain="wisprflow.ai"
+	badge="Cloud Dictation"
+	icon={wisprFlowIcon}
+/>
+
+**Wispr Flow** funciona genial: interfaz agradable y respuesta instantánea. Pero su plan gratuito se agota muy rápido y luego exige una suscripción mensual recurrente.
+
+Luego probé **MacWhisper**:
+
+<LinkCard
+	title="MacWhisper"
+	description="Popular aplicación nativa para macOS basada en modelos locales de OpenAI Whisper directamente en Apple Silicon."
+	href="https://macwhisper.com/"
+	domain="macwhisper.com"
+	badge="On-Device AI"
+	icon={macWhisperIcon}
+/>
+
+**MacWhisper** es un gran producto. Ejecuta modelos en local de forma gratuita, lo cual es fantástico para la privacidad. Sin embargo, yo quería conectar mi propio modelo remoto en la nube, al que ya tenía acceso dedicado mediante API. Y en MacWhisper, la opción de configurar un servidor personalizado y un token API está reservada para la versión de pago Pro.
+
+Todas estas aplicaciones tienen grandes ventajas, pero comparten un inconveniente fundamental: quieren tu dinero.
+
+Y en la era de la inteligencia artificial, cuando una app te pide suscripciones por un simple wrapper básico, simplemente nos sentamos y escribimos nuestro propio fork de vibecoding.
+
+## Cómo funciona Simple Flow
+
+Yo mismo no escribí ni una sola línea de código en Swift para esta aplicación. Toda la arquitectura, el código y la compilación final fueron generados desde cero por **OpenAI Codex** en tan solo dos prompts.
+
+A nivel general, el flujo de trabajo consta de cuatro pasos lógicos:
+
+1. **Captura del atajo de teclado**: La app reside silenciosamente en la barra de menús y detecta globalmente la pulsación de la tecla `Fn` (Globe) en modo push-to-talk.
+2. **Grabación de audio**: Mientras la tecla está presionada, el audio del micrófono del sistema se graba en un búfer temporal.
+3. **Envío a la nube**: En el momento en que se suelta la tecla, el archivo de audio se envía de forma asíncrona a mi endpoint remoto con autorización mediante token.
+4. **Inserción del resultado**: El texto transcrito se pega de inmediato en la ventana activa emulando pulsaciones sintéticas de `⌘V`.
+
+## Desarrollo en 2 prompts con Codex
+
+### Prompt 1: Lógica central y máquina de estados
+
+En el primer prompt, describí el flujo con palabras sencillas: demonio en la barra de menú, captura de la tecla `Fn`, grabación de audio, petición HTTP a la API e inserción en el foco activo.
+
+Codex seleccionó los frameworks nativos de macOS (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) y construyó una máquina de estados pura y determinista para gestionar todo el ciclo de vida:
+
+```swift
+public enum DictationPhase: Equatable, Sendable {
+    case idle
+    case recording
+    case transcribing
+    case feedback(FeedbackKind)
+}
+
+public struct DictationStateMachine: Sendable {
+    public private(set) var phase: DictationPhase = .idle
+
+    public mutating func handle(_ event: DictationEvent) -> [DictationEffect] {
+        switch (phase, event) {
+        case (.idle, .hotkeyPressed):
+            phase = .recording
+            return [.captureFocus, .startAudio]
+
+        case (.recording, .hotkeyReleased):
+            phase = .transcribing
+            return [.stopAndTranscribe]
+
+        case (.recording, .escapePressed):
+            phase = .idle
+            return [.cancelAudio, .returnToIdle]
+
+        case (.transcribing, .transcriptionInserted):
+            phase = .feedback(.inserted)
+            return []
+
+        case (.transcribing, .failed(let message)):
+            phase = .feedback(.error(message))
+            return []
+
+        default:
+            return []
+        }
+    }
+}
+```
+
+### Prompt 2: Interfaz de ajustes y compilación final
+
+En el segundo prompt, pedí una interfaz de usuario completa:
+- Indicador de estado en la barra de menús (`Ready` / `Recording`).
+- Ventana nativa de ajustes: selección de micrófono, grabador de atajos de teclado personalizados, comprobación de permisos de macOS (Accesibilidad y Micrófono) e inicio automático al encender el Mac.
+- Almacenamiento seguro del endpoint y token API en el Keychain del sistema.
+- Script automatizado para compilar el paquete `.app` de producción.
+
+Codex escribió toda la interfaz en SwiftUI/AppKit, compiló el proyecto Swift en la terminal y me entregó el ejecutable `SimpleFlow.app`.
+
+## El resultado
+
+Arrastré `SimpleFlow.app` a mi carpeta `/Applications`, introduje mi token y servidor en la configuración, y funcionó a la primera exactamente como quería.
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2.5rem 0;">
+	<div>
+		<Image src={menubarImg} alt="Simple Flow Menu Bar popover" />
+	</div>
+	<div>
+		<Image src={settingsImg} alt="Simple Flow Settings window" />
+	</div>
+</div>
+
+Incluso medí el consumo real del proceso mediante `top` mientras escribía este artículo:
+- **CPU: `0.0%`** en reposo (el proceso duerme en el `RunLoop` y solo despierta con las interrupciones de `CGEventTap`).
+- **RAM: `~50 MB`** (la memoria base estándar de los frameworks del sistema AppKit y SwiftUI).
+
+Apenas consume recursos, permanece silencioso en la barra de estado y transcribe mis prompts a las IAs sin suscripciones ni límites artificiales.
+
+## Código fuente y descargas en GitHub
+
+He publicado todo el código fuente del proyecto de forma abierta:
+
+<LinkCard
+	title="Simple Flow en GitHub"
+	description="Repositorio open-source en Swift para macOS: arquitectura completa, máquina de estados, monitor de atajos e instrucciones de compilación."
+	href="https://github.com/kirill-dev-pro/simple-flow"
+	domain="github.com"
+	badge="Open Source"
+	icon={appIcon}
+/>
+
+Puedes descargar el archivo compilado (`SimpleFlow-v1.0.0.zip`) directamente desde la [página de Releases en GitHub](https://github.com/kirill-dev-pro/simple-flow/releases/latest). Para instalarlo, simplemente descomprime el archivo y arrastra `SimpleFlow.app` a tu carpeta `/Applications`.
+
+## Conclusión
+
+Cuando necesitas una herramienta adaptada a tu flujo de trabajo específico, ya no tienes que resignarte a pagar suscripciones mensuales ni pasar semanas aprendiendo SDKs nativos desconocidos.
+
+Define tu flujo con claridad, encárgaselo a un agente de IA en Codex y obtendrás una aplicación nativa lista para usar en pocos minutos.

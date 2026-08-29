@@ -1,0 +1,163 @@
+---
+title: '我是如何用 2 条 Codex 提示词构建我的第一个 macOS 原生应用的'
+description: 'Simple Flow 的诞生故事：一款轻量级 macOS 原生一键语音听写应用，在市面上现有工具都要按月收费时，通过 AI 智能体端到端编写构建。'
+pubDate: 'Aug 29 2026'
+heroImage: '../../assets/blog/simple-flow/app-icon.png'
+---
+
+import LinkCard from '../../components/LinkCard.astro';
+import { Image } from 'astro:assets';
+import menubarImg from '../../assets/blog/simple-flow/menubar.png';
+import settingsImg from '../../assets/blog/simple-flow/settings.png';
+import appIcon from '../../assets/blog/simple-flow/app-icon.png';
+import wisprFlowIcon from '../../assets/blog/wispr-flow-icon.png';
+import macWhisperIcon from '../../assets/blog/macwhisper-icon.png';
+
+> 🚀 **下载应用**：已编译好的开箱即用版本现已在 [GitHub Releases](https://github.com/kirill-dev-pro/simple-flow/releases/latest) 发布。
+
+我已经很久没有 100% 依赖键盘打字了。在日常工作中，我更多时候是直接用语音进行听写输入，以获得快速且精准的文本转写。
+
+这主要用于和大语言模型（LLM）对话。我妻子甚至开玩笑说，我现在跟电脑说的话比跟她说的还多。老实说，这玩笑并非毫无根据：我坚信要想让大模型给出高质量的回答，输入的实时上下文、细节和背景信息越丰富，产出的质量就越高。如果单纯靠双手在键盘上敲出长篇大论，既耗时又低效。
+
+正因如此，我需要一款符合我使用习惯的语音输入工具。不是那种通用的复杂软件，而是严格契合我工作流的产品：按住全局快捷键（`Fn / 地球仪键` 一键对讲 push-to-talk），倾吐想法，松开按键——转写好的文字立刻自动粘贴在当前光标闪烁的位置（无论是代码编辑器、终端、浏览器还是聊天窗口）。
+
+## 市面上现有方案的局限
+
+macOS 上确实有一些优秀的产品。我深入测试了多种方案，其中有两款给人留下了深刻印象。
+
+<LinkCard
+	title="Wispr Flow"
+	description="极速云端实时语音听写服务，具备极高的实时识别准确度与即时音频反馈。"
+	href="https://wisprflow.ai/"
+	domain="wisprflow.ai"
+	badge="Cloud Dictation"
+	icon={wisprFlowIcon}
+/>
+
+**Wispr Flow** 的体验非常出色：界面精美、响应极其迅速。但免费额度很快就会耗尽，随后便需要按月支付高昂的订阅费用。
+
+随后我体验了 **MacWhisper**：
+
+<LinkCard
+	title="MacWhisper"
+	description="广受欢迎的 macOS 原生听写应用，基于 OpenAI Whisper 本地模型直接在 Apple Silicon 芯片上运行。"
+	href="https://macwhisper.com/"
+	domain="macwhisper.com"
+	badge="On-Device AI"
+	icon={macWhisperIcon}
+/>
+
+**MacWhisper** 是一款扎实的产品。它在本地免费运行 Whisper 模型，对隐私极其友好。然而，我本身就拥有专属的远程云端大模型 API，对于长段落识别速度更快、准确率更高。而 MacWhisper 却把自定义服务器 URL 和 API Token 的功能锁在了收费的 Pro 版本中。
+
+这些软件各有亮点，但都有一个共同的问题：它们都想要你的钱。
+
+而在 AI 时代，当一款基础封装应用试图收取昂贵费用时，我们完全可以直接自己动手，vibecoding 写一个属于自己的开源分支。
+
+## Simple Flow 的工作架构
+
+在这个项目中，我自己**没有手写一行 Swift 代码**。从架构设计、核心逻辑到最终的二进制打包，全部由 **OpenAI Codex** 仅凭 2 条提示词完成。
+
+从宏观上看，整个流水线分为四个清晰的步骤：
+
+1. **全局快捷键拦截**：应用静默常驻在菜单栏，通过系统级底层钩子全局拦截 `Fn`（地球仪）按键的按下与释放。
+2. **音频录制**：在按键按住期间，系统麦克风音频以极低延迟录入内存缓冲区。
+3. **云端转写请求**：松开按键的瞬间，音频数据被异步推送到自定义远程端点，并附带 Token 鉴权。
+4. **自动文本粘贴**：转写结果返回后，通过模拟合成 `⌘V` 系统按键，即时注入到当前处于焦点的活跃应用窗口中。
+
+## 用 2 条 Codex 提示词完成开发
+
+### 提示词 1：核心逻辑与状态机
+
+在第一条提示词中，我用自然语言描述了整套工作流程：菜单栏常驻后台、按住 `Fn` 录音、松开请求网络 API、并将文本自动粘贴到焦点处。
+
+Codex 自动挑选了 macOS 原生框架（`AVFoundation`、`ApplicationServices`、`CoreGraphics`），并构建了一个纯粹、确定的状态机来驱动整个生命周期：
+
+```swift
+public enum DictationPhase: Equatable, Sendable {
+    case idle
+    case recording
+    case transcribing
+    case feedback(FeedbackKind)
+}
+
+public struct DictationStateMachine: Sendable {
+    public private(set) var phase: DictationPhase = .idle
+
+    public mutating func handle(_ event: DictationEvent) -> [DictationEffect] {
+        switch (phase, event) {
+        case (.idle, .hotkeyPressed):
+            phase = .recording
+            return [.captureFocus, .startAudio]
+
+        case (.recording, .hotkeyReleased):
+            phase = .transcribing
+            return [.stopAndTranscribe]
+
+        case (.recording, .escapePressed):
+            phase = .idle
+            return [.cancelAudio, .returnToIdle]
+
+        case (.transcribing, .transcriptionInserted):
+            phase = .feedback(.inserted)
+            return []
+
+        case (.transcribing, .failed(let message)):
+            phase = .feedback(.error(message))
+            return []
+
+        default:
+            return []
+        }
+    }
+}
+```
+
+### 提示词 2：设置界面与生产级打包
+
+在第二条提示词中，我要求补齐日常使用所需的一切功能：
+- 菜单栏状态图标（`Ready` 待命 / `Recording` 录音中）与下拉菜单。
+- 原生设置窗口：麦克风设备切换、自定义快捷键录制、系统权限检查（辅助功能 Accessibility 与麦克风权限）以及开机自启开关。
+- 将服务器 URL 与 API Token 安全存储在 macOS 系统 Keychain 中。
+- 自动化构建脚本，直接输出生产环境下的 `.app` 应用包。
+
+Codex 编写了完整的 UI 代码，在终端中直接编译 Swift 代码，并交付了打包签名的 `SimpleFlow.app`。
+
+## 实际运行效果
+
+我直接将 `SimpleFlow.app` 拖入 `/Applications` 文件夹，在设置中填入 API Token 与服务器地址，应用立刻完美运行。
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2.5rem 0;">
+	<div>
+		<Image src={menubarImg} alt="Simple Flow Menu Bar popover" />
+	</div>
+	<div>
+		<Image src={settingsImg} alt="Simple Flow Settings window" />
+	</div>
+</div>
+
+在写这篇文章时，我还专门使用 `top` 命令实测了系统资源开销：
+- **CPU：`0.0%`** 待机占用（进程常驻在 `RunLoop` 中处于 `sleeping` 状态，仅在触发 `CGEventTap` 按键中断时瞬时唤醒）。
+- **RAM：`~50 MB`**（标准 AppKit 和 SwiftUI 系统框架的基础内存常驻）。
+
+它几乎不消耗系统资源，安安静静地待在状态栏，毫无延迟地帮我把长篇语音转化为大模型提示词，没有任何收费陷阱或人工限制。
+
+## GitHub 开源与下载
+
+我已经将项目的全部源代码开源：
+
+<LinkCard
+	title="Simple Flow on GitHub"
+	description="基于 Swift 的 macOS 开源项目：完整架构设计、状态机、快捷键监控器与本地构建指南。"
+	href="https://github.com/kirill-dev-pro/simple-flow"
+	domain="github.com"
+	badge="Open Source"
+	icon={appIcon}
+/>
+
+预编译好的应用压缩包（`SimpleFlow-v1.0.0.zip`）可以直接在 [GitHub Releases 页面](https://github.com/kirill-dev-pro/simple-flow/releases/latest) 下载。解压后将 `SimpleFlow.app` 拖入 `/Applications` 即可开始使用。
+
+## 结语
+
+想要拥有完全符合自己工作流的原生软件，如今早已不再需要耗费数周去钻研陌生的语言和底层 SDK。
+
+只要你对流水线逻辑有清晰的梳理，把需求交给 Codex 这样的 AI 编程智能体，短短几分钟内就能拿到一款真正属于你的原生应用。

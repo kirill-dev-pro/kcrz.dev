@@ -141,6 +141,7 @@
 }
 
 .garden-hero__route {
+  position: relative;
   grid-column: 8 / 13;
   display: inline-flex;
   align-items: center;
@@ -148,9 +149,10 @@
   gap: 1.25rem;
   min-height: 3.5rem;
   padding: 0 1.35rem;
-  border: 1px solid rgba(242, 245, 243, 0.28);
+  background-color: rgba(242, 245, 243, 0.24);
   color: var(--paper);
   text-decoration: none;
+  isolation: isolate;
   clip-path: polygon(
     0.8rem 0,
     100% 0,
@@ -160,14 +162,29 @@
     0 0.8rem
   );
   transition:
-    border-color 180ms ease,
-    background-color 180ms ease;
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.garden-hero__route::before {
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background-color: var(--carbon);
+  clip-path: inherit;
+  content: "";
+  transition: background-color 180ms ease;
 }
 
 .garden-hero__route:hover,
 .garden-hero__route:focus-visible {
-  border-color: var(--bunderstack-violet);
-  background: rgba(155, 123, 255, 0.08);
+  background-color: var(--bunderstack-violet);
+  color: #ffffff;
+}
+
+.garden-hero__route:hover::before,
+.garden-hero__route:focus-visible::before {
+  background-color: color-mix(in srgb, var(--carbon) 90%, var(--bunderstack-violet));
 }
 
 .garden-hero__route svg {
@@ -269,7 +286,7 @@
 
 .project-garden {
   position: relative;
-  padding: 8rem 0 9rem;
+  padding: 4rem 0 9rem;
 }
 
 .project-garden__heading {
