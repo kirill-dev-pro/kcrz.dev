@@ -15,7 +15,8 @@
 	--font-display: var(--font-ubuntu-sans), system-ui, sans-serif;
 	--font-body: var(--font-ubuntu-sans), system-ui, sans-serif;
 	--font-accent: var(--font-tektur), "Arial Narrow", "Helvetica Neue", sans-serif;
-	--font-utility: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+	--font-mono: var(--font-ubuntu-mono), "Ubuntu Sans Mono", "Ubuntu Mono", "Source Code Pro", "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+	--font-utility: var(--font-mono);
 	--content-max: 80rem;
 	--page-gutter: clamp(1.25rem, 4vw, 4.5rem);
 	--accent: var(--bunderstack-violet);

@@ -5,6 +5,8 @@ pubDate: 'Aug 29 2026'
 heroImage: '../../assets/blog/simple-flow/app-icon.png'
 ---
 
+import CodeTabs from '../../components/CodeTabs.astro';
+import { simpleFlowCodeTabs } from '../../data/simple-flow-snippets';
 import LinkCard from '../../components/LinkCard.astro';
 import { Image } from 'astro:assets';
 import menubarImg from '../../assets/blog/simple-flow/menubar.png';
@@ -21,26 +23,26 @@ Mostly, this is for talking to AI models. My wife even jokes that I talk to my c
 
 That's precisely why I needed a voice dictation tool. Not some generic app, but something that behaves exactly how I want: hold down a single hotkey (push-to-talk), pour out my thoughts, release the key, and have the transcribed text appear immediately right where the cursor is blinking.
 
-## What Didn't Work with Existing Tools
+## What Didn’t Work with Existing Tools
 
-There are genuinely great dictation apps on macOS. I tested several options, and two stood out.
+There are great options on macOS. I tried multiple alternatives, and two of them stood out.
 
 <LinkCard
 	title="Wispr Flow"
-	description="A fast real-time AI speech-to-text dictation application with impressive accuracy and responsive audio feedback."
+	description="Blazing fast cloud-powered dictation with outstanding real-time recognition accuracy and audio cues."
 	href="https://wisprflow.ai/"
 	domain="wisprflow.ai"
 	badge="Cloud Dictation"
 	icon={wisprFlowIcon}
 />
 
-**Wispr Flow** is awesome: great interface, instantaneous response. But the free tier runs into harsh limits very quickly, after which it demands a recurring monthly subscription.
+**Wispr Flow** is fantastic: sleek UI and instant response. But the free tier hits limits quickly, and after that, it requires a recurring monthly subscription.
 
-Next, I gave **MacWhisper** a spin:
+Then I tried **MacWhisper**:
 
 <LinkCard
 	title="MacWhisper"
-	description="A popular native macOS application running local OpenAI Whisper models directly on Apple Silicon."
+	description="Popular native macOS dictation app running local OpenAI Whisper models directly on Apple Silicon."
 	href="https://macwhisper.com/"
 	domain="macwhisper.com"
 	badge="On-Device AI"
@@ -66,51 +68,13 @@ At a high level, the whole pipeline comes down to four obvious steps:
 
 ## Development in Two Prompts
 
-### Prompt 1: Core Logic & State Machine
+### Prompt 1: Core Logic & Architecture
 
 In the first prompt, I simply described the chain of events in plain words: background daemon, `Fn` key hold, audio recording, network request, and active focus text insertion.
 
-Codex pulled in the necessary macOS frameworks (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) and wired together a clean, functional state machine:
+Codex pulled in the necessary macOS frameworks (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) and wired together a clean, functional state machine, event tap hotkey monitor, and synthetic text injector:
 
-```swift
-public enum DictationPhase: Equatable, Sendable {
-    case idle
-    case recording
-    case transcribing
-    case feedback(FeedbackKind)
-}
-
-public struct DictationStateMachine: Sendable {
-    public private(set) var phase: DictationPhase = .idle
-
-    public mutating func handle(_ event: DictationEvent) -> [DictationEffect] {
-        switch (phase, event) {
-        case (.idle, .hotkeyPressed):
-            phase = .recording
-            return [.captureFocus, .startAudio]
-
-        case (.recording, .hotkeyReleased):
-            phase = .transcribing
-            return [.stopAndTranscribe]
-
-        case (.recording, .escapePressed):
-            phase = .idle
-            return [.cancelAudio, .returnToIdle]
-
-        case (.transcribing, .transcriptionInserted):
-            phase = .feedback(.inserted)
-            return []
-
-        case (.transcribing, .failed(let message)):
-            phase = .feedback(.error(message))
-            return []
-
-        default:
-            return []
-        }
-    }
-}
-```
+<CodeTabs tabs={simpleFlowCodeTabs} />
 
 ### Prompt 2: Settings Window & Production Build
 

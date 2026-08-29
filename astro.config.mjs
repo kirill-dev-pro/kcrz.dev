@@ -8,6 +8,12 @@ import { defineConfig, fontProviders } from 'astro/config';
 export default defineConfig({
 	site: 'https://kcrz.dev',
 	integrations: [mdx(), sitemap()],
+	markdown: {
+		shikiConfig: {
+			theme: 'dark-plus',
+			wrap: false,
+		},
+	},
 	fonts: [
 		{
 			// Accent only: project names and highlighted words.
@@ -27,6 +33,15 @@ export default defineConfig({
 			styles: ['normal', 'italic'],
 			subsets: ['latin', 'latin-ext', 'cyrillic'],
 			fallbacks: ['system-ui', 'sans-serif'],
+		},
+		{
+			provider: fontProviders.google(),
+			name: 'Ubuntu Sans Mono',
+			cssVariable: '--font-ubuntu-mono',
+			weights: ['400 700'],
+			styles: ['normal', 'italic'],
+			subsets: ['latin', 'latin-ext', 'cyrillic'],
+			fallbacks: ['Source Code Pro', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
 		},
 	],
 });

@@ -1,0 +1,172 @@
+---
+import { Code } from 'astro:components';
+
+interface TabItem {
+	filename: string;
+	code: string;
+	lang?: string;
+}
+
+interface Props {
+	tabs: TabItem[];
+}
+
+const { tabs } = Astro.props;
+---
+
+<div class="vscode-window vscode-window--tabs" data-vscode-tabs-root>
+	<div class="vscode-header">
+		<div class="vscode-dots">
+			<span class="vscode-dot vscode-dot--red" aria-hidden="true"></span>
+			<span class="vscode-dot vscode-dot--yellow" aria-hidden="true"></span>
+			<span class="vscode-dot vscode-dot--green" aria-hidden="true"></span>
+		</div>
+
+		<div class="vscode-tabs" role="tablist" aria-label="Source code files">
+			{
+				tabs.map((tab, idx) => {
+					const isActive = idx === 0;
+					return (
+						<button
+							type="button"
+							class={`vscode-tab ${isActive ? 'is-active' : ''}`}
+							role="tab"
+							aria-selected={isActive ? 'true' : 'false'}
+							data-tab-idx={idx}
+						>
+							<span class="vscode-tab__icon">
+								<svg
+									viewBox="0 0 16 16"
+									fill="currentColor"
+									width="13"
+									height="13"
+									style="color: #F05138"
+								>
+									<path d="M14.6 9.8c-.8 1.4-2.1 2.6-3.7 3.3 3.1-1.3 4.2-4.4 4.2-4.4s-1.8 1.9-4.7 1.8c2.2-1.7 3.5-4.2 3.5-4.2s-2.7 2.6-6 3.1c1.5-1.5 2.6-3.8 2.6-3.8s-3.5 3.3-7.5 4.5c-.3.1-.6.2-.9.4C1 11.2 0 12.3 0 12.3s2.4-.6 5-1.9c-2.4 1.3-4.5 3.5-4.5 3.5s3.2-1.5 6.4-3.4c2.8 1.5 6.1 1.6 7.7-.7z" />
+								</svg>
+							</span>
+							<span class="vscode-tab__name">{tab.filename}</span>
+						</button>
+					);
+				})
+			}
+		</div>
+
+		<button type="button" class="vscode-copy-btn" aria-label="Copy code" data-copy-active-tab>
+			<svg
+				class="vscode-copy-icon"
+				viewBox="0 0 16 16"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+				aria-hidden="true"
+			>
+				<rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"
+				></rect>
+				<path
+					d="M3.5 11V3.5C3.5 2.67157 4.17157 2 5 2H11"
+					stroke="currentColor"
+					stroke-width="1.3"
+					stroke-linecap="round"></path>
+			</svg>
+			<span class="vscode-copy-label">Copy</span>
+		</button>
+	</div>
+
+	<div class="vscode-panels">
+		{
+			tabs.map((tab, idx) => {
+				const isActive = idx === 0;
+				return (
+					<div
+						class={`vscode-panel ${isActive ? 'is-active' : ''}`}
+						data-panel-idx={idx}
+						hidden={!isActive}
+					>
+						<Code code={tab.code.trim()} lang={(tab.lang as any) || 'swift'} theme="dark-plus" />
+					</div>
+				);
+			})
+		}
+	</div>
+</div>
+
+<script>
+	function initInteractiveCodeTabs() {
+		const containers = document.querySelectorAll<HTMLElement>('[data-vscode-tabs-root]');
+
+		containers.forEach((container) => {
+			const tabs = container.querySelectorAll<HTMLButtonElement>('.vscode-tab');
+			const panels = container.querySelectorAll<HTMLElement>('.vscode-panel');
+			const copyBtn = container.querySelector<HTMLButtonElement>('[data-copy-active-tab]');
+
+			tabs.forEach((tab) => {
+				tab.addEventListener('click', () => {
+					const idx = tab.dataset.tabIdx;
+
+					tabs.forEach((t) => {
+						const isCurrent = t.dataset.tabIdx === idx;
+						t.classList.toggle('is-active', isCurrent);
+						t.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+					});
+
+					panels.forEach((p) => {
+						const isCurrent = p.dataset.panelIdx === idx;
+						p.classList.toggle('is-active', isCurrent);
+						p.hidden = !isCurrent;
+					});
+				});
+			});
+
+			if (copyBtn) {
+				copyBtn.addEventListener('click', async () => {
+					const activePanel = container.querySelector<HTMLElement>('.vscode-panel.is-active');
+					const codeEl = activePanel?.querySelector('code');
+					const text = codeEl?.innerText || '';
+
+					try {
+						await navigator.clipboard.writeText(text);
+						copyBtn.classList.add('is-copied');
+						const label = copyBtn.querySelector('.vscode-copy-label');
+						if (label) label.textContent = 'Copied!';
+
+						setTimeout(() => {
+							copyBtn.classList.remove('is-copied');
+							if (label) label.textContent = 'Copy';
+						}, 2000);
+					} catch (e) {
+						console.error('Failed to copy tab code:', e);
+					}
+				});
+			}
+		});
+	}
+
+	initInteractiveCodeTabs();
+</script>
+
+<style>
+	.vscode-window--tabs {
+		margin: 2.2rem 0;
+		background-color: #1e1e1e;
+		border: 1px solid rgba(242, 245, 243, 0.12);
+		border-radius: 8px;
+		overflow: hidden;
+		box-shadow:
+			0 12px 32px rgba(0, 0, 0, 0.45),
+			0 0 0 1px rgba(255, 255, 255, 0.04);
+	}
+
+	.vscode-tab {
+		cursor: pointer;
+		border: 0;
+		outline: none;
+	}
+
+	.vscode-panels {
+		position: relative;
+	}
+
+	.vscode-panel[hidden] {
+		display: none !important;
+	}
+</style>

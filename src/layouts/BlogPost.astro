@@ -134,13 +134,47 @@ const articleBadges: Record<string, string> = {
 		</main>
 
 		<script>
+			import mediumZoom from 'medium-zoom';
 			import { initHexParallax } from '../scripts/hex-parallax';
+			import { initVSCodeCodeBlocks } from '../scripts/vscode-code-blocks';
 
 			const hexField = document.querySelector<HTMLElement>('.hex-field');
 			if (hexField) initHexParallax(hexField);
+
+			// Transform markdown code blocks into VS Code-style editor windows with line numbers & copy buttons
+			initVSCodeCodeBlocks();
+
+			// Medium-style smooth image zoom on click, dismiss on scroll/click
+			const zoomableImages = Array.from(
+				document.querySelectorAll<HTMLElement>(
+					'.prose img:not(.article-link-card__icon), .blog-post__hero-media img',
+				),
+			);
+
+			if (zoomableImages.length > 0) {
+				mediumZoom(zoomableImages, {
+					margin: 32,
+					background: 'rgba(7, 8, 11, 0.94)',
+					scrollOffset: 40,
+				});
+			}
 		</script>
 
 		<style>
+			:global(.medium-zoom-overlay) {
+				z-index: 100 !important;
+				backdrop-filter: blur(12px) !important;
+			}
+
+			:global(.medium-zoom-image--opened) {
+				z-index: 101 !important;
+				border-radius: 8px !important;
+				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+			}
+
+			.prose :global(img:not(.article-link-card__icon)) {
+				cursor: zoom-in;
+			}
 			.blog-post-page {
 				position: relative;
 				overflow-x: clip;
@@ -355,8 +389,8 @@ const articleBadges: Record<string, string> = {
 				margin: 0;
 			}
 
-			.prose :global(code) {
-				font-family: var(--font-accent);
+			.prose :global(code:not(pre code)) {
+				font-family: var(--font-mono);
 				font-size: 0.88em;
 				padding: 0.2em 0.45em;
 				background-color: rgba(242, 245, 243, 0.08);
@@ -365,21 +399,169 @@ const articleBadges: Record<string, string> = {
 				color: var(--bunderstack-violet);
 			}
 
-			.prose :global(pre) {
-				margin: 2rem 0;
-				padding: 1.25rem 1.5rem;
-				background-color: var(--carbon) !important;
+			/* VS Code Window Container */
+			:global(.vscode-window) {
+				margin: 2.2rem 0;
+				background-color: #1e1e1e;
 				border: 1px solid rgba(242, 245, 243, 0.12);
 				border-radius: 8px;
-				overflow-x: auto;
+				overflow: hidden;
+				box-shadow:
+					0 12px 32px rgba(0, 0, 0, 0.45),
+					0 0 0 1px rgba(255, 255, 255, 0.04);
 			}
 
-			.prose :global(pre code) {
+			:global(.vscode-header) {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				height: 2.4rem;
+				padding: 0 0.85rem;
+				background-color: #252526;
+				border-bottom: 1px solid #181818;
+				user-select: none;
+			}
+
+			:global(.vscode-dots) {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+			}
+
+			:global(.vscode-dot) {
+				width: 10px;
+				height: 10px;
+				border-radius: 50%;
+			}
+
+			:global(.vscode-dot--red) {
+				background-color: #ff5f56;
+			}
+
+			:global(.vscode-dot--yellow) {
+				background-color: #ffbd2e;
+			}
+
+			:global(.vscode-dot--green) {
+				background-color: #27c93f;
+			}
+
+			:global(.vscode-tabs) {
+				display: flex;
+				align-items: center;
+				height: 100%;
+				margin-left: 0.85rem;
+				margin-right: auto;
+			}
+
+			:global(.vscode-tab) {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.45rem;
+				height: 100%;
+				padding: 0 0.85rem;
+				font-family: var(--font-mono);
+				font-size: 0.76rem;
+				color: #969696;
+				background-color: transparent;
+				border-right: 1px solid #181818;
+			}
+
+			:global(.vscode-tab.is-active) {
+				color: #ffffff;
+				background-color: #1e1e1e;
+				border-top: 2px solid var(--bunderstack-violet);
+			}
+
+			:global(.vscode-tab__icon) {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			:global(.vscode-copy-btn) {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.35rem;
+				padding: 0.25rem 0.6rem;
+				background: rgba(242, 245, 243, 0.06);
+				border: 1px solid rgba(242, 245, 243, 0.1);
+				border-radius: 4px;
+				color: #969696;
+				font-family: var(--font-mono);
+				font-size: 0.72rem;
+				cursor: pointer;
+				transition:
+					color 150ms ease,
+					background-color 150ms ease,
+					border-color 150ms ease;
+			}
+
+			:global(.vscode-copy-btn:hover) {
+				color: #ffffff;
+				background: rgba(242, 245, 243, 0.12);
+				border-color: rgba(242, 245, 243, 0.2);
+			}
+
+			:global(.vscode-copy-btn.is-copied) {
+				color: #27c93f;
+				border-color: rgba(39, 201, 63, 0.4);
+				background: rgba(39, 201, 63, 0.1);
+			}
+
+			:global(.vscode-copy-icon) {
+				width: 12px;
+				height: 12px;
+			}
+
+			/* VS Code Editor Body & Line Numbers */
+			.prose :global(pre.astro-code) {
+				margin: 0 !important;
+				padding: 1rem 0 !important;
+				background-color: #1e1e1e !important;
+				border: 0 !important;
+				border-radius: 0 !important;
+				overflow-x: auto;
+				font-family: var(--font-mono);
+				font-size: 0.88rem;
+				line-height: 1.65;
+			}
+
+			.prose :global(pre.astro-code code) {
+				display: table;
+				width: 100%;
+				counter-reset: step;
+				font-family: var(--font-mono);
 				background-color: transparent;
 				border: 0;
 				padding: 0;
 				color: inherit;
-				font-size: 0.9em;
+			}
+
+			.prose :global(pre.astro-code .line) {
+				display: table-row;
+				counter-increment: step;
+				padding-right: 1.5rem;
+				transition: background-color 120ms ease;
+			}
+
+			.prose :global(pre.astro-code .line:hover) {
+				background-color: rgba(255, 255, 255, 0.04);
+			}
+
+			.prose :global(pre.astro-code .line::before) {
+				content: counter(step);
+				display: table-cell;
+				text-align: right;
+				padding-right: 1.25rem;
+				padding-left: 1.25rem;
+				color: #6e7681;
+				font-family: var(--font-mono);
+				font-size: 0.82em;
+				user-select: none;
+				width: 3.6rem;
+				opacity: 0.55;
+				border-right: 1px solid rgba(255, 255, 255, 0.08);
 			}
 
 			.prose :global(a) {

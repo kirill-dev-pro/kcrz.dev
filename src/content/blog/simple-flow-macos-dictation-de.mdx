@@ -5,6 +5,8 @@ pubDate: 'Aug 29 2026'
 heroImage: '../../assets/blog/simple-flow/app-icon.png'
 ---
 
+import CodeTabs from '../../components/CodeTabs.astro';
+import { simpleFlowCodeTabs } from '../../data/simple-flow-snippets';
 import LinkCard from '../../components/LinkCard.astro';
 import { Image } from 'astro:assets';
 import menubarImg from '../../assets/blog/simple-flow/menubar.png';
@@ -66,51 +68,13 @@ Auf hoher Ebene besteht die Pipeline aus vier einfachen Schritten:
 
 ## Entwicklung in 2 Prompts mit Codex
 
-### Prompt 1: Kernlogik und State Machine
+### Prompt 1: Kernlogik und Architektur
 
 Im ersten Prompt habe ich die Anforderungen einfach in eigenen Worten beschrieben: Hintergrund-Daemon, `Fn`-Taste, Audioaufnahme, Netzwerk-Request und Texteinfügung.
 
-Codex wählte die passenden macOS-Systemframeworks (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) und baute eine saubere, deterministische State Machine:
+Codex wählte die passenden macOS-Systemframeworks (`AVFoundation`, `ApplicationServices`, `CoreGraphics`) und baute eine saubere State Machine, Hotkey-Listener und Texteinfüger:
 
-```swift
-public enum DictationPhase: Equatable, Sendable {
-    case idle
-    case recording
-    case transcribing
-    case feedback(FeedbackKind)
-}
-
-public struct DictationStateMachine: Sendable {
-    public private(set) var phase: DictationPhase = .idle
-
-    public mutating func handle(_ event: DictationEvent) -> [DictationEffect] {
-        switch (phase, event) {
-        case (.idle, .hotkeyPressed):
-            phase = .recording
-            return [.captureFocus, .startAudio]
-
-        case (.recording, .hotkeyReleased):
-            phase = .transcribing
-            return [.stopAndTranscribe]
-
-        case (.recording, .escapePressed):
-            phase = .idle
-            return [.cancelAudio, .returnToIdle]
-
-        case (.transcribing, .transcriptionInserted):
-            phase = .feedback(.inserted)
-            return []
-
-        case (.transcribing, .failed(let message)):
-            phase = .feedback(.error(message))
-            return []
-
-        default:
-            return []
-        }
-    }
-}
-```
+<CodeTabs tabs={simpleFlowCodeTabs} />
 
 ### Prompt 2: Einstellungsfenster und Produktions-Build
 
