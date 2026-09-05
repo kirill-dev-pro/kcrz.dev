@@ -167,7 +167,7 @@ const dateLocales: Record<string, string> = {
 													width={isFirst ? 960 : 720}
 													height={isFirst ? 540 : 405}
 													src={post.data.heroImage}
-													alt=""
+													alt={post.data.title}
 													loading={isFirst ? 'eager' : 'lazy'}
 													decoding="async"
 												/>

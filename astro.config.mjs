@@ -7,7 +7,12 @@ import { defineConfig, fontProviders } from 'astro/config';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://kcrz.dev',
-	integrations: [mdx(), sitemap()],
+	integrations: [
+		mdx(),
+		sitemap({
+			filter: (page) => page !== 'https://kcrz.dev/about/',
+		}),
+	],
 	markdown: {
 		shikiConfig: {
 			theme: 'dark-plus',

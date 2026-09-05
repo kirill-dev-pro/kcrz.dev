@@ -1,21 +1,19 @@
 import { getCollection } from 'astro:content';
 import rss from '@astrojs/rss';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { parsePostSlug } from '../utils/seo';
 
 export async function GET(context) {
 	const posts = await getCollection('blog');
-	// Filter to primary (English) posts so subscribers don't receive multiple translations of the same post
-	const enPosts = posts
-		.filter((post) => parsePostSlug(post.id).lang === 'en')
+	const ruPosts = posts
+		.filter((post) => parsePostSlug(post.id).lang === 'ru')
 		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 	return rss({
-		title: SITE_TITLE,
-		description: SITE_DESCRIPTION,
+		title: 'Kcrz.dev — Блог (RU)',
+		description: 'Инженерные заметки, распределенные системы и разработка инструментов.',
 		site: context.site,
-		customData: '<language>en-us</language>',
-		items: enPosts.map((post) => ({
+		customData: '<language>ru-ru</language>',
+		items: ruPosts.map((post) => ({
 			...post.data,
 			link: `/blog/${post.id}/`,
 		})),

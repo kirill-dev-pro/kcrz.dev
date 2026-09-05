@@ -1,22 +1,68 @@
 ---
 import { Image } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
+import { type CollectionEntry, getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import SchemaOrg from '../components/seo/SchemaOrg.astro';
+import { getHreflangAlternates, getLanguageLocale, parsePostSlug } from '../utils/seo';
 
 type Props = CollectionEntry<'blog'>['data'] & {
 	id?: string;
+	noindex?: boolean;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, id = '' } = Astro.props;
+const {
+	title,
+	description,
+	pubDate,
+	updatedDate,
+	heroImage,
+	id = '',
+	noindex = false,
+} = Astro.props;
 
-function getLangFromId(postId: string): string {
-	const match = postId.match(/-(ru|es|de|fr|zh)$/);
-	return match ? match[1] : 'en';
-}
+const { lang: currentLang } = parsePostSlug(id);
 
-const currentLang = getLangFromId(id);
+const allPosts = await getCollection('blog');
+const allPostIds = allPosts.map((p) => p.id);
+const alternates = id
+	? getHreflangAlternates(id, allPostIds, Astro.site || Astro.url)
+	: [];
+const locale = getLanguageLocale(currentLang);
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || Astro.url);
+const ogImageUrl = id ? `/open-graph/${id}.png` : undefined;
+const ogImageAbsolute = ogImageUrl
+	? new URL(ogImageUrl, Astro.site || Astro.url).href
+	: heroImage
+		? new URL(heroImage.src, Astro.site || Astro.url).href
+		: undefined;
+
+const blogPostingSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: title,
+	description: description,
+	datePublished: pubDate.toISOString(),
+	dateModified: (updatedDate || pubDate).toISOString(),
+	inLanguage: currentLang,
+	mainEntityOfPage: {
+		'@type': 'WebPage',
+		'@id': canonicalURL.href,
+	},
+	author: {
+		'@type': 'Person',
+		name: 'Kirill Chuprov',
+		url: 'https://kcrz.dev',
+	},
+	publisher: {
+		'@type': 'Person',
+		name: 'Kirill Chuprov',
+		url: 'https://kcrz.dev',
+	},
+	...(ogImageAbsolute ? { image: ogImageAbsolute } : {}),
+};
 
 const backLabels: Record<string, string> = {
 	en: 'All engineering logs',
@@ -49,7 +95,20 @@ const articleBadges: Record<string, string> = {
 <!doctype html>
 <html lang={currentLang}>
 	<head>
-		<BaseHead title={`${title} — Blog`} description={description} image={heroImage} />
+		<BaseHead
+			title={`${title} — Blog`}
+			description={description}
+			image={ogImageUrl || heroImage}
+			article={{
+				publishedTime: pubDate,
+				modifiedTime: updatedDate,
+				authors: ['Kirill Chuprov'],
+			}}
+			locale={locale}
+			alternates={alternates}
+			noindex={noindex}
+		/>
+		<SchemaOrg schema={blogPostingSchema} />
 	</head>
 
 	<body class="blog-post-page">
@@ -102,7 +161,7 @@ const articleBadges: Record<string, string> = {
 									width={1200}
 									height={630}
 									src={heroImage}
-									alt=""
+									alt={title}
 									loading="eager"
 								/>
 							</div>
