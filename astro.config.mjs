@@ -3,6 +3,7 @@
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
+import { serializeSitemapItem, sitemapXmlIntegration } from './src/utils/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,7 +12,9 @@ export default defineConfig({
 		mdx(),
 		sitemap({
 			filter: (page) => page !== 'https://kcrz.dev/about/',
+			serialize: serializeSitemapItem,
 		}),
+		sitemapXmlIntegration(),
 	],
 	markdown: {
 		shikiConfig: {
