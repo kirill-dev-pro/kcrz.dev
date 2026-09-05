@@ -1,0 +1,62 @@
+---
+interface Props {
+	post: string;
+	dark?: boolean;
+	height?: number;
+}
+
+const { post, dark = true, height = 680 } = Astro.props;
+const cleanPost = post.replace(/^https?:\/\/t\.me\//, '').replace(/^\/+/, '');
+const embedUrl = `https://t.me/${cleanPost}?embed=1${dark ? '&dark=1' : ''}`;
+---
+
+<div class="telegram-embed-wrapper">
+	<iframe
+		id={`tg-${cleanPost.replace(/[^a-zA-Z0-9_-]/g, '-')}`}
+		class="telegram-embed-iframe"
+		src={embedUrl}
+		width="100%"
+		height={height}
+		frameborder="0"
+		scrolling="no"
+		loading="lazy"
+		title={`Telegram post ${cleanPost}`}
+	></iframe>
+</div>
+
+<script>
+	window.addEventListener('message', (event) => {
+		if (typeof event.data !== 'string') return;
+		try {
+			const data = JSON.parse(event.data);
+			if (data.event === 'resize' && data.height) {
+				const iframes = document.querySelectorAll<HTMLIFrameElement>('.telegram-embed-iframe');
+				iframes.forEach((iframe) => {
+					if (iframe.contentWindow === event.source) {
+						iframe.style.height = `${data.height}px`;
+					}
+				});
+			}
+		} catch {}
+	});
+</script>
+
+<style>
+	.telegram-embed-wrapper {
+		display: flex;
+		justify-content: center;
+		margin: 2.2rem 0;
+		width: 100%;
+		background: transparent;
+	}
+
+	.telegram-embed-iframe {
+		width: 100%;
+		max-width: 100%;
+		border: none;
+		background-color: transparent;
+		box-shadow: none;
+		overflow: hidden;
+		transition: height 0.18s ease;
+	}
+</style>

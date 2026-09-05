@@ -1,0 +1,185 @@
+---
+title: 'HRbreakers.com 诞生记'
+description: 'HRbreakers.com 是一个免费工具，可根据具体岗位要求为你量身定制一份完美的 PDF 简历'
+pubDate: 'Sep 05 2026'
+heroImage: '../../assets/blog/hrbreakers/hero.png'
+---
+
+import { Image } from 'astro:assets';
+import LinkCard from '../../components/LinkCard.astro';
+import TelegramPost from '../../components/TelegramPost.astro';
+import hrBreakersLogo from '../../assets/blog/hrbreakers/logo.webp';
+import canvaIcon from '../../assets/blog/tools/canva.png';
+import grammarlyIcon from '../../assets/blog/tools/grammarly.png';
+import chatgptIcon from '../../assets/blog/tools/chatgpt.png';
+import resumeBefore from '../../assets/blog/hrbreakers/resume-before.png';
+import resumeAfter from '../../assets/blog/hrbreakers/resume-after.png';
+import uiInterface from '../../assets/blog/hrbreakers/ui-interface.png';
+
+想和大家聊聊 [HR Breakers](https://hrbreakers.com) 的诞生故事。
+
+<LinkCard
+	title="HR Breakers"
+	description="根据具体职位描述智能调整现有简历，生成重点突出的 PDF 格式简历，随时可投。"
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+前段时间我在找工作。2026 年的技术就业市场相当残酷。单是过去这两年，整个科技行业就经历了：
+* 几乎各大厂普遍推行的大规模裁员
+* 生成式 AI 的全面爆发
+* 遍地开花的编程速成培训班
+
+如今，一个岗位刚发布前两个小时就能收到上百份简历，早已是司空见惯的事情。HR 们会怎么做？当然是用 AI 来减轻负担，把海量投递筛选到人工肉眼能看得过来的量级。
+
+更何况，企业现在确实*能*在市场上找到在大型企业里做过完全一模一样业务长达 5 年的人选——因此他们只锁定这类极其精准的人才。
+
+面对这种现状，我意识到原有的投递方式必须彻底改变。最开始我主要用这几款工具：
+
+<LinkCard
+	title="Canva"
+	description="视觉美化、精细排版与简历模版编辑。"
+	href="https://www.canva.com"
+	domain="canva.com"
+	badge="Design"
+	accent="#00c4cc"
+	icon={canvaIcon}
+/>
+
+<LinkCard
+	title="Grammarly"
+	description="拼写、语法与语气检查，特别适用于英文简历校对。"
+	href="https://www.grammarly.com"
+	domain="grammarly.com"
+	badge="Writing"
+	accent="#15c39a"
+	icon={grammarlyIcon}
+/>
+
+<LinkCard
+	title="ChatGPT"
+	description="帮助梳理过往经历、提炼核心优势，并针对岗位需求优化话术。"
+	href="https://chatgpt.com"
+	domain="chatgpt.com"
+	badge="LLM"
+	accent="#10a37f"
+	icon={chatgptIcon}
+/>
+
+我也试过各种号称优化 ATS 的 AI 小工具、在线简历生成器和订阅制平台。但基本没有真正好用的：不是排版错乱、通篇废话，就是连最基础的功能都要按月收费。
+
+就在这时，鲍里斯发了这篇炸裂的内容（[鲍里斯的 Telegram 帖子](https://t.me/boris_again/3720)）：
+
+<TelegramPost />
+
+## HR-Breaker：鲍里斯的原型思路
+
+鲍里斯发布了他的业余项目，带有一个本地网页界面。它的工作逻辑是：
+1. 接收你现有的 PDF 格式简历。
+2. 提取出纯文本内容。
+3. 获取目标职位的招聘需求。
+4. 将两者输入 LLM，结合批评模型（critic model）经过多轮推理，提炼出相关经验并围绕岗位要求重组简历。
+5. 最终生成一份整洁、排版优雅的 PDF 简历。
+
+我拉下了他的代码库，在本地跑起来，试着跑了几个招聘需求，心想：卧槽，这思路太绝了！我以前居然从没见过同类产品。
+
+你可以拿任意招聘描述，让模型对准自己真实的经验库，最终生成一份将你的核心优势和匹配技能针对该岗位精准突出的简历。没有虚构经历，只是打法更加精准。
+
+那一刻我就意识到，必须把它做成一个正规的 SaaS 产品……
+
+## 项目迭代：从笨重的初版到 Bunderstack
+
+起初我做得非常简单：把原有 Python 代码包进 docker-compose，加上自制前端和一个独立的 JS 后端。运行起来又慢又卡，体验很差。
+
+经过几次重构后，我最终选用了目前最轻盈高效的现代 Web 应用技术栈：
+- 前端 — **React**
+- 后端 — [Bunderstack](https://bunderstack.kcrz.dev)（我们基于 Bun 和 oRPC 打造的类型安全后端框架）
+- 托管 — [Bunderhost](https://bunderhost.kcrz.dev)
+
+除核心生成功能外，平台还支持：
+- 生成历史记录
+- 通过招聘链接直接解析岗位
+- 在线支付
+
+用户前三次可以免费生成体验，之后按次收取少量费用。毕竟优质模型的推理算力是有成本的。
+
+我把这个初始版本发布并分享给了朋友们。大家都觉得挺惊艳——随时按需一键生成定制简历的体验反馈极好。这让我更加确信必须把这个项目打磨完整。
+
+界面我尽量做得很极简，流程就两步：
+
+<div style="margin: 2.5rem 0;">
+  <Image src={uiInterface} alt="HR Breakers 简历生成界面" />
+</div>
+
+接下来的路线图是做一个求职投递追踪工具，方便记录投递过的职位、更新面试状态并查看数据统计。
+
+另外我还计划支持一键导入 LinkedIn 档案，直接根据个人资料生成针对性简历。你觉得这个功能实用吗？
+
+## 终极考验：我自己靠它找到了工作
+
+我开始在每一次求职投递中重度使用这个工具。也正是凭借它，**我最终拿到了 Offer 并成功入职**。这是一个货真价实的实战案例。
+
+投递后石沉大海的情况明显减少了。当招聘人员打开简历，在前几秒钟就能准确看到他们业务迫切需要的关键词和工作职责时，简历通过初筛的阻力就会大幅降低。
+
+## 如何将这款工具的威力发挥到极致
+
+要想让工具输出最顶级的效果：
+
+> **请在网站上传你内容最详尽的简历。**
+
+不要上传已经精简过的一页纸简历。请为自己准备一份长达 5 到 6 页的“底稿总库”：
+- 把你用过的所有技术、类库和工具全部列上。
+- 详细写明所有项目经历，包括早年的业余小项目和个人实验。
+- 细致说明你解决过什么具体问题、承担过哪些核心责任。
+
+把这么厚的文件直接交给 HR 显然不合适。但对 LLM Agent 而言，这才是最佳上下文底料。模型拥有的原始真实背景越充实，就越能精准提取雇主所需技能，过滤掉无关噪音，并把精华为你打包装进一份漂亮紧凑的 PDF 中，绝不胡编乱造。
+
+表单中还提供了 **Additional instructions**（补充要求）字段，可以补充原简历中没写进的背景信息，模型在生成时也会充分考虑。
+
+## 极限压测：全网最离谱的奇葩简历
+
+我们来看看在实战中表现如何。这是我在网上搜到的一份非常炸裂的“梗简历”。
+
+认识一下主人公 — **Ham Dugo**：
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeBefore} alt="Ham Dugo 原始梗简历" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+这里面处处都是亮点：
+- 戴着墨镜的头像，邮箱是 `TheHamMan@hotmail.com`。
+- 抬头赫然印着业务闭环图：`Customer → Dugo → Sales $$`。
+- 技能条形图：*保持高冷 100%*、*客户服务 90%*、*MS Office 35%*，意大利语仅有低调的 *15%*。
+- 最绝的是在 ZARA 的核心战绩：  
+  *«Once convinced a Chechen businessman to buy our entire collection of button up shirts»*（曾说服一位车臣商人买下了我们整批纽扣衬衫）。
+
+我把这份旷世神作喂进了 HR Breakers，目标设为一个零售岗位，点击生成。这就是产出的结果：
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeAfter} alt="HR Breakers 为 Ham Dugo 生成的哈佛格式简历" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+模型不仅洗掉了刺眼的排版、生成了经典的单页哈佛标准 PDF，而且还将那个车臣商人的故事重塑为无可挑剔的企业商务英文：
+
+> *«Successfully negotiated and executed bulk inventory sales with high-volume international clientele.»*（成功与高客单价跨国大客户完成大宗库存销售谈判与履约）
+
+效果立竿见影。没有任何捏造：把滞销库存大宗卖给国际大客户是百分之百的事实，只是措辞被包装成了大厂 HR 最想看到的样子。
+
+## Bottom text
+
+服务现已在 [hrbreakers.com](https://hrbreakers.com) 上线。前三次生成完全免费，欢迎大家上传自己的简历体验实战效果。
+
+<LinkCard
+	title="HR Breakers"
+	description="根据具体职位描述智能调整现有简历，生成重点突出的 PDF 格式简历，随时可投。"
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+快去试试吧！

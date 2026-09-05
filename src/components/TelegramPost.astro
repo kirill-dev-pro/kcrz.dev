@@ -1,0 +1,382 @@
+---
+import { Image } from 'astro:assets';
+import avatarImg from '../assets/blog/hrbreakers/boris-avatar.jpg';
+import photo1 from '../assets/blog/hrbreakers/boris-post-photo1.jpg';
+import photo2 from '../assets/blog/hrbreakers/boris-post-photo2.jpg';
+
+interface Props {
+	href?: string;
+}
+
+const { href = 'https://t.me/boris_again/3720' } = Astro.props;
+---
+
+<div class="tg-message-container">
+	<a href="https://t.me/boris_again" target="_blank" rel="noopener noreferrer" class="tg-avatar-link" aria-label="Канал Борис опять">
+		<Image src={avatarImg} alt="Борис опять" class="tg-avatar" width={44} height={44} />
+	</a>
+
+	<div class="tg-bubble">
+		<div class="tg-header">
+			<a href="https://t.me/boris_again" target="_blank" rel="noopener noreferrer" class="tg-author-name">
+				Борис опять
+			</a>
+			<a href={href} target="_blank" rel="noopener noreferrer" class="tg-plane-btn" title="Открыть в Telegram" aria-label="Открыть в Telegram">
+				<svg viewBox="0 0 24 24" fill="currentColor">
+					<path d="m20.665 3.717-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l-.313 4.674c.459 0 .661-.21.917-.46l2.203-2.14 4.58 3.385c.844.465 1.452.226 1.663-.782l3.006-14.161c.308-1.234-.472-1.793-1.465-1.328Z" />
+				</svg>
+			</a>
+		</div>
+
+		<div class="tg-media-grid">
+			<div class="tg-photo-wrap">
+				<Image src={photo1} alt="hr-breaker repo preview" class="tg-photo" />
+			</div>
+			<div class="tg-photo-wrap">
+				<Image src={photo2} alt="hr-breaker console and interface" class="tg-photo" />
+			</div>
+		</div>
+
+		<div class="tg-text">
+			<p>
+				На днях обсуждали с админом <a href="https://t.me/pseudolabeling" target="_blank" rel="noopener noreferrer">@pseudolabeling</a>, что автоматические фильтры резюме совсем оборзели. Некоторые ребята которых я менторил из-за этого вручную оптимизировали резюме под каждую вакансию. Почему бы не автоматизировать?
+			</p>
+			<p>
+				Навайбкодил <a href="https://github.com/btseytlin/hr-breaker" target="_blank" rel="noopener noreferrer">github.com/btseytlin/hr-breaker</a>:
+			</p>
+			<ol class="tg-list">
+				<li>Загружаете резюме</li>
+				<li>Даете ссылку на вакансию</li>
+				<li>LLM вооруженная тулколами генерирует оптимизированное резюме (в том числе по советам из <a href="https://btseytlin.github.io/parts/2_getting_a_job/resume.html" target="_blank" rel="noopener noreferrer">методички</a>)</li>
+				<li>Делаются стандартные проверки: keyword matching, vector similarity, проверка LLM-кой (в том числе визуально, что всё не поехало), проверка на галлюцинации, проверка на очевидный AI-generated текст</li>
+				<li>Если хотя бы одна проверка не пройдена оптимизация продолжается</li>
+			</ol>
+			<p>
+				Важно, что всё сконфигурировано не врать и не изобретать опыта которого нет, поэтому получается очень неплохо.
+				<span class="tg-spoiler" role="button" tabindex="0" title="Нажмите, чтобы показать спойлер">
+					Но если у вас нет совести ничто не мешает форкануть, поиграться с промптами и отключить пару проверок 🤗
+				</span>
+			</p>
+			<p>
+				UX сделан для массовой подачи: кладет оптимизированные PDF в папку с указанием роли и компании, чтобы вы не забыли какое резюме куда отправляли.
+			</p>
+			<p>
+				Скачиваете, подставляете свой ключ Gemini API, <code>uv run</code> и уничтожаете скрининг как явление. Добейте выживших
+			</p>
+			<p class="tg-channel-tag">
+				<a href="https://t.me/boris_again" target="_blank" rel="noopener noreferrer">@boris_again</a>
+			</p>
+		</div>
+
+		<div class="tg-reactions">
+			<span class="tg-reaction"><span class="tg-emoji">❤️</span> 101</span>
+			<span class="tg-reaction"><span class="tg-emoji">🔥</span> 62</span>
+			<span class="tg-reaction"><span class="tg-emoji">🫡</span> 14</span>
+			<span class="tg-reaction"><span class="tg-emoji">👍</span> 4</span>
+		</div>
+
+		<div class="tg-footer">
+			<a href={href} target="_blank" rel="noopener noreferrer" class="tg-post-link">
+				t.me/boris_again/3720
+			</a>
+			<div class="tg-meta">
+				<span class="tg-views">175K views</span>
+				<span class="tg-date">29 янв. 2026</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	const spoilers = document.querySelectorAll('.tg-spoiler');
+	spoilers.forEach((spoiler) => {
+		spoiler.addEventListener('click', () => {
+			spoiler.classList.toggle('is-revealed');
+		});
+		spoiler.addEventListener('keydown', (e) => {
+			if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+				spoiler.classList.toggle('is-revealed');
+			}
+		});
+	});
+</script>
+
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
+
+	.tg-message-container {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.85rem;
+		margin: 2.5rem 0;
+		width: 100%;
+		box-sizing: border-box;
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+	}
+
+	.tg-avatar-link {
+		flex-shrink: 0;
+		display: block;
+		margin-top: 0.25rem;
+		cursor: pointer;
+	}
+
+	.tg-avatar {
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		display: block;
+		object-fit: cover;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+		cursor: pointer !important;
+	}
+
+	.tg-bubble {
+		position: relative;
+		flex: 1 1 auto;
+		min-width: 0;
+		background: #15202b;
+		border: 1px solid rgba(242, 245, 243, 0.12);
+		border-radius: 14px;
+		padding: 0.85rem 1.15rem 0.75rem;
+		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+	}
+
+	.tg-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.65rem;
+	}
+
+	.tg-author-name {
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+		color: #64b5ef !important;
+		font-weight: 600 !important;
+		font-size: 0.95rem !important;
+		line-height: 1.2 !important;
+		letter-spacing: normal !important;
+		text-decoration: none !important;
+	}
+
+	.tg-author-name:hover {
+		text-decoration: underline !important;
+	}
+
+	.tg-plane-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		color: #64b5ef;
+		opacity: 0.85;
+		transition: opacity 160ms ease, transform 160ms ease;
+	}
+
+	.tg-plane-btn:hover {
+		opacity: 1;
+		transform: scale(1.1);
+	}
+
+	.tg-plane-btn svg {
+		width: 1.2rem;
+		height: 1.2rem;
+	}
+
+	.tg-media-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0.45rem;
+		margin: 0.45rem 0 0.85rem;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	@media (min-width: 600px) {
+		.tg-media-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	.tg-photo-wrap {
+		display: block;
+		overflow: hidden;
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 6px;
+	}
+
+	.tg-photo {
+		display: block;
+		width: 100%;
+		height: 100%;
+		max-height: 280px;
+		object-fit: cover;
+		cursor: zoom-in !important;
+		transition: opacity 160ms ease;
+	}
+
+	.tg-photo:hover {
+		opacity: 0.94;
+	}
+
+	.tg-text {
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+		font-size: 15px !important;
+		line-height: 1.38 !important;
+		letter-spacing: normal !important;
+		color: rgba(255, 255, 255, 0.94) !important;
+	}
+
+	.tg-text :global(p) {
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+		font-size: 15px !important;
+		line-height: 1.38 !important;
+		letter-spacing: normal !important;
+		margin: 0.65rem 0 !important;
+		color: rgba(255, 255, 255, 0.94) !important;
+	}
+
+	.tg-message-container :global(a),
+	.tg-bubble :global(a),
+	.tg-text :global(a),
+	.tg-author-name,
+	.tg-post-link {
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+		color: #64b5ef !important;
+		text-decoration: none !important;
+		letter-spacing: normal !important;
+		font-style: normal !important;
+	}
+
+	.tg-message-container :global(a:hover),
+	.tg-bubble :global(a:hover),
+	.tg-text :global(a:hover),
+	.tg-author-name:hover,
+	.tg-post-link:hover {
+		color: #64b5ef !important;
+		text-decoration: underline !important;
+	}
+
+	/* Reset prose list styles to authentic Telegram decimal list */
+	.tg-text :global(ol),
+	.tg-list {
+		margin: 0.5rem 0 0.65rem 1.35rem !important;
+		padding: 0 !important;
+		list-style: decimal !important;
+		counter-reset: none !important;
+	}
+
+	.tg-text :global(ol > li),
+	.tg-list li {
+		display: list-item !important;
+		position: static !important;
+		padding-left: 0.2rem !important;
+		margin-bottom: 0.25rem !important;
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+		font-size: 15px !important;
+		line-height: 1.38 !important;
+		letter-spacing: normal !important;
+		list-style-type: decimal !important;
+		color: rgba(255, 255, 255, 0.94) !important;
+	}
+
+	.tg-text :global(ol > li::before),
+	.tg-list li::before {
+		display: none !important;
+		content: none !important;
+	}
+
+	.tg-text :global(code) {
+		font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace !important;
+		font-size: 13.5px !important;
+		padding: 0.12rem 0.35rem !important;
+		background: rgba(255, 255, 255, 0.1) !important;
+		border-radius: 4px !important;
+		color: #e6f1f7 !important;
+		letter-spacing: normal !important;
+	}
+
+	.tg-spoiler {
+		display: inline;
+		background: #2b3947;
+		color: transparent;
+		border-radius: 4px;
+		padding: 0 0.25rem;
+		cursor: pointer;
+		user-select: none;
+		transition: background 160ms ease, color 160ms ease;
+	}
+
+	.tg-spoiler.is-revealed {
+		background: rgba(255, 255, 255, 0.08);
+		color: inherit;
+		user-select: auto;
+	}
+
+	.tg-channel-tag {
+		margin-top: 0.75rem !important;
+		font-weight: 500;
+	}
+
+	.tg-reactions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0.85rem 0 0.75rem;
+		padding-top: 0.65rem;
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+	}
+
+	.tg-reaction {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-size: 0.8rem;
+		padding: 0.2rem 0.55rem;
+		background: rgba(255, 255, 255, 0.07);
+		border-radius: 12px;
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	.tg-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-size: 0.76rem;
+		color: #798894;
+		margin-top: 0.45rem;
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+	}
+
+	.tg-post-link {
+		color: #64b5ef !important;
+		text-decoration: none !important;
+		font-family: inherit !important;
+	}
+
+	.tg-post-link:hover {
+		text-decoration: underline !important;
+	}
+
+	.tg-meta {
+		display: flex;
+		gap: 0.85rem;
+		font-family: inherit !important;
+	}
+
+	@media (max-width: 540px) {
+		.tg-message-container {
+			gap: 0.5rem;
+		}
+
+		.tg-avatar {
+			width: 36px;
+			height: 36px;
+		}
+
+		.tg-bubble {
+			padding: 0.75rem 0.9rem;
+		}
+	}
+</style>

@@ -1,0 +1,185 @@
+---
+title: 'La historia de HRbreakers.com'
+description: 'HRbreakers.com es una web gratuita que adapta el currículum PDF perfecto a cualquier oferta de empleo'
+pubDate: 'Sep 05 2026'
+heroImage: '../../assets/blog/hrbreakers/hero.png'
+---
+
+import { Image } from 'astro:assets';
+import LinkCard from '../../components/LinkCard.astro';
+import TelegramPost from '../../components/TelegramPost.astro';
+import hrBreakersLogo from '../../assets/blog/hrbreakers/logo.webp';
+import canvaIcon from '../../assets/blog/tools/canva.png';
+import grammarlyIcon from '../../assets/blog/tools/grammarly.png';
+import chatgptIcon from '../../assets/blog/tools/chatgpt.png';
+import resumeBefore from '../../assets/blog/hrbreakers/resume-before.png';
+import resumeAfter from '../../assets/blog/hrbreakers/resume-after.png';
+import uiInterface from '../../assets/blog/hrbreakers/ui-interface.png';
+
+Quiero contar la historia detrás de [HR Breakers](https://hrbreakers.com).
+
+<LinkCard
+	title="HR Breakers"
+	description="Adapta tu currículum actual a una oferta de empleo concreta y genera un PDF enfocado y listo para enviar."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+Hace poco estuve buscando trabajo. El mercado laboral de la tecnología en 2026 está muy complicado. Solo en los últimos dos años hemos vivido:
+* Despidos masivos en casi todas las Big Tech
+* El boom de la IA generativa
+* Bootcamps interminables de programación
+
+Hoy en día, que a una oferta de trabajo le lleguen cien currículums en las dos primeras horas es lo más habitual. ¿Y qué hacen los reclutadores? Usar IA para simplificarse la vida y filtrar el aluvión de candidatos hasta un volumen que puedan leer con sus propios ojos.
+
+Además, las empresas ahora realmente *pueden* encontrar a personas que han hecho exactamente lo mismo durante cinco años en entornos corporativos, así que van a buscar perfiles ultraespecíficos.
+
+Viendo este panorama, comprendí que tenía que cambiar de enfoque por completo. Estas fueron las herramientas con las que empecé:
+
+<LinkCard
+	title="Canva"
+	description="Ajuste visual, maquetación cuidada y edición de plantillas de currículum."
+	href="https://www.canva.com"
+	domain="canva.com"
+	badge="Design"
+	accent="#00c4cc"
+	icon={canvaIcon}
+/>
+
+<LinkCard
+	title="Grammarly"
+	description="Corrección de ortografía, gramática y tono, especialmente para currículums en inglés."
+	href="https://www.grammarly.com"
+	domain="grammarly.com"
+	badge="Writing"
+	accent="#15c39a"
+	icon={grammarlyIcon}
+/>
+
+<LinkCard
+	title="ChatGPT"
+	description="Ayuda a estructurar la experiencia, resaltar puntos fuertes y afinar las frases según los requisitos de la vacante."
+	href="https://chatgpt.com"
+	domain="chatgpt.com"
+	badge="LLM"
+	accent="#10a37f"
+	icon={chatgptIcon}
+/>
+
+También probé muchas herramientas de IA para optimizar ATS, generadores online y plataformas con suscripción. Pero ninguna aportaba valor real: maquetaciones rotas, textos vacíos o cuotas mensuales por funciones básicas.
+
+Y justo en ese momento, Boris lanza este temazo ([post de Boris en Telegram](https://t.me/boris_again/3720)):
+
+<TelegramPost />
+
+## HR-Breaker: la idea original de Boris
+
+Boris publicó su pet project, que contaba con una interfaz web local. Funcionaba así:
+1. Recibe tu currículum en PDF.
+2. Lo convierte a texto plano.
+3. Toma la descripción del puesto deseado.
+4. Pasa todo por un LLM en varias pasadas con un modelo crítico para extraer la experiencia relevante y reestructurar el currículum según los requisitos.
+5. Genera un PDF limpio y bien estructurado como resultado.
+
+Me descargué el repositorio, lo ejecuté en local, probé varias ofertas y pensé: ¡esto es una idea brutal! Nunca me había topado con nada parecido.
+
+Puedes tomar cualquier descripción de vacante, apuntar el modelo hacia tu bagaje profesional real y obtener un currículum donde tus fortalezas y experiencia relevante destacan exactamente para ese puesto. Sin inventar nada, solo con el enfoque correcto.
+
+En ese instante tuve claro que debía convertirlo en un SaaS en toda regla...
+
+## Desarrollando el proyecto: de un prototipo tosco a Bunderstack
+
+Empecé de la forma más sencilla: metí el código original en docker-compose, le añadí un frontend propio y un backend separado en JS. Funcionaba lento y pesado.
+
+Tras reescribirlo varias veces, me decanté por el stack más ágil y eficiente para aplicaciones web modernas:
+- Frontend — **React**
+- Backend — [Bunderstack](https://bunderstack.kcrz.dev) (nuestro framework tipado basado en Bun y oRPC)
+- Hosting — [Bunderhost](https://bunderhost.kcrz.dev)
+
+¿Qué más incluye la plataforma además de la generación principal?
+- Historial de generaciones
+- Análisis de ofertas directamente desde un enlace
+- Pagos
+
+Los usuarios pueden generar tres currículums gratis para probarlo y después se cobra una cantidad simbólica. La inferencia de modelos potentes no es gratis.
+
+Lancé esta primera versión y se la enseñé a mis amigos. Les encantó: la posibilidad de generar currículums personalizados al instante encajó a la perfección. Había que llevar el proyecto hasta el final.
+
+Diseñé la interfaz para que fuera lo más sencilla posible, en solo dos pasos:
+
+<div style="margin: 2.5rem 0;">
+  <Image src={uiInterface} alt="Interfaz de creación de currículum en HR Breakers" />
+</div>
+
+Lo siguiente en la hoja de ruta es un gestor de candidaturas para organizar las ofertas a las que te has postulado, cambiar estados y consultar métricas.
+
+También tengo pensado añadir la importación de perfiles de LinkedIn para armar currículums directamente desde tus datos profesionales. ¿Te resultaría útil?
+
+## La prueba definitiva: yo mismo conseguí trabajo con esto
+
+Utilicé mi propia herramienta para cada una de mis postulaciones. Y gracias a ella **terminé encontrando trabajo**. Una historia de éxito real y tangible.
+
+El número de candidaturas que caían en saco roto se redujo de forma notable. Cuando un reclutador abre el documento y en los primeros segundos ve justo las palabras clave y responsabilidades urgentes del puesto, la postulación supera el primer filtro con mucha más facilidad.
+
+## Cómo exprimir el servicio al máximo
+
+Para sacarle el máximo rendimiento a la herramienta:
+
+> **Sube a la web tu currículum más detallado posible.**
+
+No subas un resumen de una sola página. Crea un «documento maestro» de unas 5 o 6 páginas:
+- Incluye todas las tecnologías, librerías y herramientas con las que hayas trabajado alguna vez.
+- Detalla cada proyecto, incluso antiguos proyectos personales y side projects.
+- Explica con precisión qué problemas resolviste y de qué eras responsable.
+
+A un reclutador humano jamás se le debería presentar un documento tan denso. Pero para un agente LLM es la base de contexto perfecta. Cuantos más datos reales tenga el modelo, mejor seleccionará las habilidades que exige la empresa, eliminará el ruido innecesario y condensará todo en un PDF elegante y enfocado. Sin alucinaciones.
+
+En el formulario también hay un campo de **Additional instructions** (indicaciones especiales) para añadir detalles que no figuren en tu currículum base. El modelo también los tendrá en cuenta.
+
+## Test de estrés: el peor currículum de internet
+
+Veamos cómo se comporta en acción. Aquí tenéis un currículum meme que encontré por la red.
+
+Os presento a **Ham Dugo**:
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeBefore} alt="Currículum meme original de Ham Dugo" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+Todo aquí es sublime:
+- Un avatar con gafas de sol y el correo `TheHamMan@hotmail.com`.
+- Un diagrama de flujo en la cabecera: `Customer → Dugo → Sales $$`.
+- Barras de nivel de habilidades: *Keeping it cool 100%*, *Customer service 90%*, *MS Office 35%* e italiano a un discreto *15%*.
+- Y la joya de la corona: su mayor logro en la tienda ZARA:  
+  *«Once convinced a Chechen businessman to buy our entire collection of button up shirts»* (una vez convenció a un empresario checheno de comprar toda nuestra colección de camisas de botones).
+
+Cargué esta obra de arte en HR Breakers, la enfoqué a un puesto en retail y pulsé el botón. Este fue el resultado:
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeAfter} alt="Currículum adaptado de Ham Dugo generado en HR Breakers" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+El modelo no solo limpió el desastre visual y generó un PDF clásico de una sola página en formato Harvard. Además, transformó la anécdota del empresario checheno en un inglés corporativo impecable:
+
+> *«Successfully negotiated and executed bulk inventory sales with high-volume international clientele.»*
+
+El cambio es abismal. Nada es falso: la venta al por mayor de stock sobrante a un gran cliente internacional es un hecho real, pero redactado exactamente como esperan leerlo los reclutadores corporativos.
+
+## Bottom text
+
+El servicio está disponible en [hrbreakers.com](https://hrbreakers.com). Las tres primeras generaciones son gratuitas para que puedas probar tus propios currículums y ver cómo funciona en la práctica.
+
+<LinkCard
+	title="HR Breakers"
+	description="Adapta tu currículum actual a una oferta de empleo concreta y genera un PDF enfocado y listo para enviar."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+¡Pruébalo!

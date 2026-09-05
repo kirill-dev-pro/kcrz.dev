@@ -206,7 +206,7 @@ const articleBadges: Record<string, string> = {
 			// Medium-style smooth image zoom on click, dismiss on scroll/click
 			const zoomableImages = Array.from(
 				document.querySelectorAll<HTMLElement>(
-					'.prose img:not(.article-link-card__icon), .blog-post__hero-media img',
+					'.prose img:not(.article-link-card__icon):not(.tg-avatar), .blog-post__hero-media img',
 				),
 			);
 
@@ -231,7 +231,7 @@ const articleBadges: Record<string, string> = {
 				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
 			}
 
-			.prose :global(img:not(.article-link-card__icon)) {
+			.prose :global(img:not(.article-link-card__icon):not(.tg-avatar)) {
 				cursor: zoom-in;
 			}
 			.blog-post-page {

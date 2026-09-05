@@ -1,0 +1,185 @@
+---
+title: 'Die Geschichte hinter HRbreakers.com'
+description: 'HRbreakers.com ist ein kostenloses Tool, das den perfekten Lebenslauf als PDF auf jede Stellenanzeige zuschneidet'
+pubDate: 'Sep 05 2026'
+heroImage: '../../assets/blog/hrbreakers/hero.png'
+---
+
+import { Image } from 'astro:assets';
+import LinkCard from '../../components/LinkCard.astro';
+import TelegramPost from '../../components/TelegramPost.astro';
+import hrBreakersLogo from '../../assets/blog/hrbreakers/logo.webp';
+import canvaIcon from '../../assets/blog/tools/canva.png';
+import grammarlyIcon from '../../assets/blog/tools/grammarly.png';
+import chatgptIcon from '../../assets/blog/tools/chatgpt.png';
+import resumeBefore from '../../assets/blog/hrbreakers/resume-before.png';
+import resumeAfter from '../../assets/blog/hrbreakers/resume-after.png';
+import uiInterface from '../../assets/blog/hrbreakers/ui-interface.png';
+
+Ich möchte die Geschichte hinter [HR Breakers](https://hrbreakers.com) erzählen.
+
+<LinkCard
+	title="HR Breakers"
+	description="Passt deinen bestehenden Lebenslauf an eine konkrete Stellenanzeige an und generiert ein fokussiertes, versandfertiges PDF."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+Vor kurzem war ich auf Jobsuche. Der IT-Arbeitsmarkt im Jahr 2026 ist hart. Allein in den letzten zwei Jahren gab es in unserer Branche:
+* Massenentlassungen bei fast allen Big-Tech-Konzernen
+* Den Boom generativer KI
+* Endlose Coding-Bootcamps
+
+Dass bei einer Stellenausschreibung schon in den ersten zwei Stunden hundert Bewerbungen eingehen, ist mittlerweile normal. Und was machen Recruiter? Richtig, sie setzen KI ein, um die Flut an Bewerbungen so weit vorzufiltern, dass sie überhaupt noch von Menschen gesichtet werden kann.
+
+Dazu kommt: Unternehmen *können* heute tatsächlich Leute finden, die exakt dasselbe fünf Jahre lang im Enterprise-Umfeld gemacht haben – also suchen sie genau danach.
+
+Als ich mir das ansah, war klar: Mein Ansatz brauchte ein radikales Umdenken. Zu Beginn nutzte ich folgende Tools:
+
+<LinkCard
+	title="Canva"
+	description="Visuelles Feintuning, sauberes Layout und Bearbeiten von Lebenslauf-Vorlagen."
+	href="https://www.canva.com"
+	domain="canva.com"
+	badge="Design"
+	accent="#00c4cc"
+	icon={canvaIcon}
+/>
+
+<LinkCard
+	title="Grammarly"
+	description="Rechtschreib-, Grammatik- und Stilprüfung, besonders für englische Bewerbungen."
+	href="https://www.grammarly.com"
+	domain="grammarly.com"
+	badge="Writing"
+	accent="#15c39a"
+	icon={grammarlyIcon}
+/>
+
+<LinkCard
+	title="ChatGPT"
+	description="Hilft dabei, Erfahrungen zu strukturieren, Stärken herauszuarbeiten und Formulierungen passgenau abzustimmen."
+	href="https://chatgpt.com"
+	domain="chatgpt.com"
+	badge="LLM"
+	accent="#10a37f"
+	icon={chatgptIcon}
+/>
+
+Ich habe auch diverse KI-Tools für ATS-Scanner, Online-Generatoren und Abo-Plattformen ausprobiert. Aber nichts davon taugte wirklich: Entweder war das Layout kaputt, der Text voller Phrasen, oder es wurde ein monatliches Abo für Basisfunktionen verlangt.
+
+Und genau in diesem Moment haut Boris diesen Banger raus ([Boris’ Beitrag auf Telegram](https://t.me/boris_again/3720)):
+
+<TelegramPost />
+
+## HR-Breaker: Boris’ ursprüngliche Idee
+
+Boris veröffentlichte sein Pet-Project mit einem lokalen Web-Interface. Der Ablauf war denkbar simpel:
+1. Nimmt dein bestehendes Lebenslauf-PDF entgegen.
+2. Extrahiert den reinen Text.
+3. Liest die Beschreibung der Zielstelle ein.
+4. Schickt beides in mehreren Durchläufen mit einem Critic-Modell durch ein LLM, um relevante Erfahrungen herauszufiltern und den Lebenslauf passgenau aufzubauen.
+5. Generiert am Ende ein sauberes, strukturiertes PDF.
+
+Ich habe mir das Repo geklont, lokal gestartet, ein paar Stellenanzeigen durchgejagt und gedacht: Verdammt, das ist eine geniale Idee! So etwas war mir vorher noch nie begegnet.
+
+Man nimmt die Stellenbeschreibung, lässt das Modell über den eigenen Erfahrungsfundus laufen und bekommt ein Dokument, in dem die eigenen Stärken exakt auf diese Position zugeschnitten sind. Ohne Erfindungen, einfach mit den richtigen Akzenten.
+
+Da wusste ich: Daraus muss ein vollwertiges SaaS werden...
+
+## Projektentwicklung: Vom schwerfälligen Prototyp zu Bunderstack
+
+Zuerst baute ich das Ganze ganz schlicht: Originalcode in docker-compose gepackt, ein eigenes Frontend und ein separates JS-Backend drangeflanscht. Das lief extrem zäh und schwerfällig.
+
+Nach einigen Refactorings landete ich beim schlanksten und effizientesten Stack für moderne Webanwendungen:
+- Frontend — **React**
+- Backend — [Bunderstack](https://bunderstack.kcrz.dev) (unser typsicheres Backend-Framework auf Basis von Bun und oRPC)
+- Hosting — [Bunderhost](https://bunderhost.kcrz.dev)
+
+Was kann der Service neben der reinen Generierung?
+- Generierungshistorie
+- Parsing von Stellenanzeigen direkt per Link
+- Bezahlung
+
+Die ersten drei Lebensläufe sind kostenlos, danach wird ein kleiner Betrag fällig. Der Inference-Betrieb guter Modelle kostet schließlich Geld.
+
+Ich veröffentlichte die erste Version und zeigte sie Freunden. Das Feedback war durchweg positiv – maßgeschneiderte Lebensläufe auf Knopfdruck kamen super an. Das Projekt musste weitergeführt werden.
+
+Das Interface habe ich bewusst minimalistisch gehalten, im Grunde nur zwei Schritte:
+
+<div style="margin: 2.5rem 0;">
+  <Image src={uiInterface} alt="HR Breakers Benutzeroberfläche zur Lebenslauf-Erstellung" />
+</div>
+
+Als Nächstes steht ein Bewerbungstracker auf dem Plan, um den Überblick über versendete Bewerbungen zu behalten, Status zu pflegen und Statistiken zu sehen.
+
+Außerdem plane ich einen LinkedIn-Profil-Import, um Lebensläufe direkt aus Profildaten generieren zu können. Wäre das nützlich?
+
+## Der ultimative Test: Ich habe damit selbst einen Job gefunden
+
+Ich habe das Tool für jede einzelne meiner Bewerbungen genutzt. Und genau dadurch **habe ich am Ende meinen Job gefunden**. Eine echte Erfolgsgeschichte aus der Praxis.
+
+Die Anzahl der Bewerbungen, auf die gar keine Rückmeldung kam, ist spürbar gesunken. Wenn Recruiter ein Dokument öffnen und in den ersten Sekunden exakt die gesuchten Stichwörter und Aufgaben sehen, besteht man den ersten Filter viel leichter.
+
+## So holt man das Maximum aus dem Service heraus
+
+Um die besten Ergebnisse zu erzielen:
+
+> **Lade deinen ausführlichsten Lebenslauf auf der Seite hoch.**
+
+Verzichte darauf, eine bereits gekürzte einseitige Fassung hochzuladen. Erstelle dir ein großes „Master-Dokument“ über 5–6 Seiten:
+- Notiere alle Technologien, Bibliotheken und Werkzeuge, mit denen du je gearbeitet hast.
+- Beschreibe alle Projekte detailliert, auch alte Neben- und Pet-Projects.
+- Erkläre konkret, welche Probleme du gelöst hast und wofür du verantwortlich warst.
+
+Einem menschlichen Recruiter sollte man so ein Dokument nicht zumuten. Für einen LLM-Agenten ist es jedoch die perfekte Kontextbasis. Je mehr Rohfakten das Modell hat, desto präziser filtert es die Skills heraus, die der Arbeitgeber fordert, entfernt überflüssiges Rauschen und verpackt alles in ein elegantes PDF. Ohne Halluzinationen.
+
+Außerdem gibt es ein Feld für **Additional instructions** (besondere Wünsche). Dort lassen sich wichtige Details ergänzen, die im aktuellen Lebenslauf noch fehlen. Das Modell bezieht diese Notizen mit ein.
+
+## Stresstest: Der berüchtigtste Lebenslauf des Internets
+
+Schauen wir uns an, wie sich das Ganze im Ernstfall schlägt. Hier ist ein legendäres Meme-Resume aus dem Netz.
+
+Darf ich vorstellen — **Ham Dugo**:
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeBefore} alt="Ham Dugo originales Meme-Resume" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+Hier ist einfach alles legendär:
+- Sonnenbrillen-Avatar mit der Mail `TheHamMan@hotmail.com`.
+- Geschäftsprozessdiagramm im Header: `Customer → Dugo → Sales $$`.
+- Skill-Balken: *Keeping it cool 100%*, *Customer service 90%*, *MS Office 35%* und Italienisch bei bescheidenen *15%*.
+- Und das Highlight – sein größter Erfolg bei ZARA:  
+  *«Once convinced a Chechen businessman to buy our entire collection of button up shirts»* (Überzeugte einst einen tschetschenischen Geschäftsmann, die gesamte Hemdenkollektion aufzukaufen).
+
+Ich habe diesen Klassiker in HR Breakers geladen, auf eine Retail-Stelle ausgerichtet und auf Generieren geklickt. Das kam dabei heraus:
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeAfter} alt="Ham Dugo maßgeschneiderter Lebenslauf von HR Breakers" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+Das Modell hat nicht nur das bunte Chaos beseitigt und ein klassisches einseitiges PDF im Harvard-Format erstellt. Es hat die Geschichte mit dem tschetschenischen Geschäftsmann in makelloses Corporate-Englisch übersetzt:
+
+> *«Successfully negotiated and executed bulk inventory sales with high-volume international clientele.»*
+
+Das Ergebnis überzeugt sofort. Nichts davon ist erfunden: Der Abverkauf von Altbeständen an einen internationalen Großkunden ist ein realer Fakt – nur eben exakt so formuliert, wie es Recruiter erwarten.
+
+## Bottom text
+
+Der Service ist live unter [hrbreakers.com](https://hrbreakers.com). Die ersten drei Generierungen sind kostenlos, damit du deine eigenen Lebensläufe testen und das Tool ausprobieren kannst.
+
+<LinkCard
+	title="HR Breakers"
+	description="Passt deinen bestehenden Lebenslauf an eine konkrete Stellenanzeige an und generiert ein fokussiertes, versandfertiges PDF."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+Probier es aus!

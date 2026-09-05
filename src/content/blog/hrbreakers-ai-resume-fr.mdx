@@ -1,0 +1,185 @@
+---
+title: 'L’histoire derrière HRbreakers.com'
+description: 'HRbreakers.com est un outil gratuit qui adapte le CV PDF idéal à chaque offre d’emploi spécifique'
+pubDate: 'Sep 05 2026'
+heroImage: '../../assets/blog/hrbreakers/hero.png'
+---
+
+import { Image } from 'astro:assets';
+import LinkCard from '../../components/LinkCard.astro';
+import TelegramPost from '../../components/TelegramPost.astro';
+import hrBreakersLogo from '../../assets/blog/hrbreakers/logo.webp';
+import canvaIcon from '../../assets/blog/tools/canva.png';
+import grammarlyIcon from '../../assets/blog/tools/grammarly.png';
+import chatgptIcon from '../../assets/blog/tools/chatgpt.png';
+import resumeBefore from '../../assets/blog/hrbreakers/resume-before.png';
+import resumeAfter from '../../assets/blog/hrbreakers/resume-after.png';
+import uiInterface from '../../assets/blog/hrbreakers/ui-interface.png';
+
+J’aimerais vous raconter l’histoire de la création de [HR Breakers](https://hrbreakers.com).
+
+<LinkCard
+	title="HR Breakers"
+	description="Adapte votre CV existant à une offre d’emploi précise et génère un PDF ciblé, prêt à être envoyé."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+Récemment, j’étais en recherche d’emploi. Le marché tech en 2026 est particulièrement rude. Au cours des deux dernières années, notre secteur a connu :
+* Des vagues massives de licenciements dans la quasi-totalité des Big Tech
+* L’explosion de l’IA générative
+* Des bootcamps de code à perte de vue
+
+Aujourd’hui, voir une centaine de candidatures affluer dans les deux premières heures suivant la publication d’une offre est devenu la norme. Et que font les recruteurs ? Ils s’appuient sur l’IA pour se simplifier la vie et filtrer la masse de profils jusqu’à un volume lisible par des humains.
+
+De plus, les entreprises *peuvent* désormais trouver des personnes ayant exercé exactement le même rôle pendant cinq ans en entreprise — elles recherchent donc ces profils au millimètre près.
+
+Face à cette réalité, j’ai compris que je devais revoir complètement ma méthode. Voici la panoplie d’outils que j’utilisais au départ :
+
+<LinkCard
+	title="Canva"
+	description="Ajustements visuels, mise en page soignée et édition de modèles de CV."
+	href="https://www.canva.com"
+	domain="canva.com"
+	badge="Design"
+	accent="#00c4cc"
+	icon={canvaIcon}
+/>
+
+<LinkCard
+	title="Grammarly"
+	description="Vérification de l’orthographe, de la grammaire et du style, particulièrement pour les CV en anglais."
+	href="https://www.grammarly.com"
+	domain="grammarly.com"
+	badge="Writing"
+	accent="#15c39a"
+	icon={grammarlyIcon}
+/>
+
+<LinkCard
+	title="ChatGPT"
+	description="Aide à structurer l’expérience, valoriser les points forts et adapter les formulations aux attentes du poste."
+	href="https://chatgpt.com"
+	domain="chatgpt.com"
+	badge="LLM"
+	accent="#10a37f"
+	icon={chatgptIcon}
+/>
+
+J’ai aussi essayé plein d’outils d’IA pour les scanners ATS, des générateurs en ligne et des services par abonnement. Rien n’apportait de réelle valeur : soit des mises en page cassées, soit du remplissage vide, soit des abonnements mensuels pour des fonctions basiques.
+
+Et pile à ce moment-là, Boris sort cette pépite ([post de Boris sur Telegram](https://t.me/boris_again/3720)) :
+
+<TelegramPost />
+
+## HR-Breaker : l’idée originelle de Boris
+
+Boris avait partagé son projet perso, doté d’une interface web locale. Le fonctionnement était le suivant :
+1. Réceptionne votre CV actuel au format PDF.
+2. L’extrait en texte brut.
+3. Récupère la description de l’offre visée.
+4. Fait passer l’ensemble dans un LLM en plusieurs passes avec un modèle critique pour cibler l’expérience pertinente et restructurer le CV selon les besoins.
+5. Génère en sortie un PDF clair et soigné.
+
+J’ai cloné son dépôt, lancé l’outil en local, testé plusieurs offres et je me suis dit : quelle idée brillante ! Je n’avais encore jamais croisé d’outil similaire.
+
+On peut prendre n’importe quelle description de poste, orienter le modèle sur l’ensemble de ses compétences réelles et obtenir un CV mettant en avant ses forces et son expérience pertinente pour ce poste précis. Sans rien inventer, simplement avec le bon angle d’attaque.
+
+J’ai tout de suite compris qu’il fallait en faire un vrai SaaS...
+
+## Développement du projet : d’un prototype lourd à Bunderstack
+
+J’ai commencé au plus simple : le code d’origine encapsulé dans docker-compose, un frontend fait maison et un backend séparé en JS. C’était lourd, lent et peu réactif.
+
+Après plusieurs réécritures, j’ai retenu la stack la plus directe et performante pour des applications web modernes :
+- Frontend — **React**
+- Backend — [Bunderstack](https://bunderstack.kcrz.dev) (notre framework backend typé basé sur Bun et oRPC)
+- Hébergement — [Bunderhost](https://bunderhost.kcrz.dev)
+
+Que propose le service en plus de la génération principale ?
+- Historique des générations
+- Parsing d’offres directement depuis un lien
+- Paiement
+
+Les trois premières générations sont gratuites pour tester l’outil, puis une somme modique est demandée. L’inférence de modèles performants a un coût réel.
+
+J’ai déployé cette première version et l’ai montrée à des amis. Ils ont adoré : le fait de pouvoir générer des CV sur mesure à la volée a tout de suite fait mouche. Il fallait poursuivre l’aventure.
+
+J’ai conçu l’interface pour qu’elle soit la plus épurée possible, en deux étapes seulement :
+
+<div style="margin: 2.5rem 0;">
+  <Image src={uiInterface} alt="Interface de création de CV sur HR Breakers" />
+</div>
+
+La suite de la feuille de route prévoit un suivi de candidatures pour classer facilement les offres postulées, modifier les statuts et consulter des indicateurs visuels.
+
+Je prévois aussi d’ajouter l’import de profil LinkedIn pour composer des CV directement depuis ses données professionnelles. Vous trouveriez cela utile ?
+
+## Le test ultime : j’ai trouvé un job grâce à l’outil
+
+J’ai utilisé mon propre service pour chacune de mes candidatures. Et c’est précisément grâce à lui que **j’ai fini par décrocher un travail**. Une vraie réussite concrète.
+
+Le nombre de candidatures restées sans réponse a nettement baissé. Quand un recruteur ouvre un document et repère dès les premières secondes les mots-clés et les missions prioritaires de son équipe, la candidature franchit le premier filtre bien plus aisément.
+
+## Tirer le meilleur parti du service
+
+Pour obtenir les meilleurs résultats :
+
+> **Chargez sur le site votre CV le plus exhaustif possible.**
+
+Ne chargez pas une synthèse déjà rabotée sur une seule page. Créez-vous un grand « document maître » de 5 à 6 pages :
+- Listez toutes les technologies, librairies et outils avec lesquels vous avez déjà travaillé.
+- Détaillez chaque projet, même les anciens projets personnels ou secondaires.
+- Expliquez précisément les problématiques résolues et les responsabilités assumées.
+
+Il serait absurde de soumettre un tel pavé à un recruteur humain. Mais pour un agent LLM, c’est une mine d’or. Plus le modèle dispose de faits bruts sur votre parcours réel, plus il sera précis pour extraire les compétences exigées, éliminer le superflu et condenser le tout dans un PDF harmonieux. Sans hallucinations.
+
+Le formulaire dispose aussi d’un champ **Additional instructions** (consignes particulières) pour préciser des éléments absents du CV de base. Le modèle en tiendra compte.
+
+## Crash test : le pire CV du web
+
+Voyons comment l’outil se comporte sur le terrain. Voici un CV légendaire déniché sur Internet.
+
+Voici **Ham Dugo** :
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeBefore} alt="CV mème original de Ham Dugo" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+Tout y est mémorable :
+- Un avatar avec lunettes de soleil et l’adresse `TheHamMan@hotmail.com`.
+- Un schéma de processus commercial en en-tête : `Customer → Dugo → Sales $$`.
+- Des barres de progression de compétences : *Keeping it cool 100%*, *Customer service 90%*, *MS Office 35%*, et un modeste *15%* en italien.
+- Et le joyau du CV — son exploit chez ZARA :  
+  *« Once convinced a Chechen businessman to buy our entire collection of button up shirts »* (a convaincu un homme d’affaires tchétchène d’acheter l’intégralité de la collection de chemises).
+
+J’ai injecté ce chef-d’œuvre dans HR Breakers, ciblé un poste dans la vente et lancé la génération. Voici le résultat :
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeAfter} alt="CV adapté de Ham Dugo généré par HR Breakers" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+Le modèle ne s’est pas contenté d’épurer les couleurs criardes pour sortir un PDF classique au format Harvard sur une seule page. Il a transformé l’histoire de l’homme d’affaires tchétchène en un anglais corporate impeccable :
+
+> *« Successfully negotiated and executed bulk inventory sales with high-volume international clientele. »*
+
+Le résultat est sans appel. Rien n’est inventé : la liquidation de stocks auprès d’un grand client international est un fait réel, formulé exactement comme l’attendent les recruteurs.
+
+## Bottom text
+
+Le service est accessible sur [hrbreakers.com](https://hrbreakers.com). Les trois premières générations sont gratuites pour tester vos CV et voir le résultat en conditions réelles.
+
+<LinkCard
+	title="HR Breakers"
+	description="Adapte votre CV existant à une offre d’emploi précise et génère un PDF ciblé, prêt à être envoyé."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+Testez-le !

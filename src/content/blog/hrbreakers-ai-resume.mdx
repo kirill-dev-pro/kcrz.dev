@@ -1,0 +1,185 @@
+---
+title: 'The Story Behind HRbreakers.com'
+description: 'HRbreakers.com is a free tool that tailors the perfect resume PDF to match any specific job opening'
+pubDate: 'Sep 05 2026'
+heroImage: '../../assets/blog/hrbreakers/hero.png'
+---
+
+import { Image } from 'astro:assets';
+import LinkCard from '../../components/LinkCard.astro';
+import TelegramPost from '../../components/TelegramPost.astro';
+import hrBreakersLogo from '../../assets/blog/hrbreakers/logo.webp';
+import canvaIcon from '../../assets/blog/tools/canva.png';
+import grammarlyIcon from '../../assets/blog/tools/grammarly.png';
+import chatgptIcon from '../../assets/blog/tools/chatgpt.png';
+import resumeBefore from '../../assets/blog/hrbreakers/resume-before.png';
+import resumeAfter from '../../assets/blog/hrbreakers/resume-after.png';
+import uiInterface from '../../assets/blog/hrbreakers/ui-interface.png';
+
+I want to share the story behind [HR Breakers](https://hrbreakers.com).
+
+<LinkCard
+	title="HR Breakers"
+	description="Tailors your existing resume to a specific job opening and outputs a focused PDF ready to send."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+Recently, I was looking for a job. The tech job market in 2026 is brutal. Over the last couple of years, our industry has seen:
+* Massive layoffs across almost all Big Tech companies
+* Generative AI boom
+* Endless coding bootcamps
+
+As a result, having a hundred resumes submitted within the first two hours of posting a job is the new normal. And what do HRs do? Naturally, they use AI to make their lives easier and filter down the deluge of applicants until it’s a volume humans can physically review.
+
+On top of that, companies can actually *find* candidates who did the exact same thing at enterprise scale for five years — which means they will hunt for those exact profiles.
+
+Looking at this landscape, I realized my approach needed a radical overhaul. Here are the tools I relied on at the beginning:
+
+<LinkCard
+	title="Canva"
+	description="Visual styling, layout adjustments, and clean resume formatting."
+	href="https://www.canva.com"
+	domain="canva.com"
+	badge="Design"
+	accent="#00c4cc"
+	icon={canvaIcon}
+/>
+
+<LinkCard
+	title="Grammarly"
+	description="Spelling, grammar, and tone checks, especially when writing in English."
+	href="https://www.grammarly.com"
+	domain="grammarly.com"
+	badge="Writing"
+	accent="#15c39a"
+	icon={grammarlyIcon}
+/>
+
+<LinkCard
+	title="ChatGPT"
+	description="Helps frame experience, highlight key strengths, and tailor phrasing to job requirements."
+	href="https://chatgpt.com"
+	domain="chatgpt.com"
+	badge="LLM"
+	accent="#10a37f"
+	icon={chatgptIcon}
+/>
+
+I also experimented with plenty of AI resume tuners, online ATS scanners, and subscription generators. But none of them provided real value: either broken formatting, generic fluff, or paywalls charging monthly subscriptions for basic features.
+
+And right at that moment, Boris dropped this banger ([Boris's post on Telegram](https://t.me/boris_again/3720)):
+
+<TelegramPost />
+
+## HR-Breaker: Boris’s Original Idea
+
+Boris shared his pet project, which had a local web interface. Here is how it worked:
+1. Ingests your existing resume PDF.
+2. Extracts it into raw text.
+3. Takes the target job description.
+4. Passes both through an LLM in multiple passes with a critic model to extract relevant experience and restructure the resume around target requirements.
+5. Generates a clean, polished PDF on output.
+
+I pulled down his repository, ran it locally, tested it against a few job descriptions, and thought: wow, this is an incredible idea! I had never stumbled upon anything quite like this before.
+
+You can take any job description, point an LLM at your real career background, and get a resume that highlights your genuine strengths and relevant skills specifically for that role. No made-up experience, just the right emphasis.
+
+That was the moment I realized this had to be turned into a proper SaaS...
+
+## Building the Project: From a Clunky Prototype to Bunderstack
+
+I started as simple as possible: wrapped the original Python code in docker-compose, bolted on a custom frontend, and set up a separate JS backend. It was heavy, clunky, and ran poorly.
+
+After several rewrites, I converged on the leanest and most effective stack for modern web applications:
+- Frontend — **React**
+- Backend — [Bunderstack](https://bunderstack.kcrz.dev) (our type-safe backend framework built on Bun and oRPC)
+- Hosting — [Bunderhost](https://bunderhost.kcrz.dev)
+
+What else does the service include beyond core generation?
+- Generation history
+- Job parsing directly from URL links
+- Payments
+
+Users get three free resume generations to test the waters, after which there's a modest fee. Quality model inference isn't free, after all.
+
+I released this initial version and shared it with friends. They loved it — generating tailored resumes on the fly clicked immediately. It became obvious this project was worth taking all the way.
+
+I designed the interface to be as straightforward as possible, just two steps:
+
+<div style="margin: 2.5rem 0;">
+  <Image src={uiInterface} alt="HR Breakers resume generation interface" />
+</div>
+
+Next on the roadmap is an application tracker to easily organize submitted vacancies, update statuses, and view analytics.
+
+I’m also planning to add LinkedIn profile import, so you can assemble tailored resumes straight from your profile data. Would that be helpful?
+
+## The Real Test: I Landed a Job With It
+
+I started using my own tool for every single application. And it was instrumental in **me actually landing a job**. It proved itself in real life.
+
+The number of applications that vanished into the void dropped noticeably. When a recruiter opens a resume and immediately spots the exact keywords and responsibilities their team is scrambling to fill, your application clears the initial filter with far less friction.
+
+## Getting the Most Out of the Service
+
+To squeeze maximum performance out of the tool:
+
+> **Upload your most exhaustive resume to the site.**
+
+Do not upload an already compressed one-page summary. Create a massive "master document" spanning 5–6 pages:
+- List every technology, library, and tool you’ve ever touched.
+- Detail every project, including old side hustles and pet projects.
+- Describe the exact problems you solved and the responsibilities you owned.
+
+No human recruiter should ever be subjected to a wall of text that dense. But for an LLM agent, it’s gold. The more raw facts the model has about your authentic background, the better it can pull out the exact skills the employer demands, strip away irrelevant noise, and neatly pack everything into an elegant, focused PDF. Without hallucinations.
+
+There is also an **Additional instructions** field on the form where you can add context or emphasis not found in the source resume. The model will incorporate those notes as well.
+
+## Stress Test: The Internet’s Most Notorious Resume
+
+Let's see how it holds up in battle. Here’s a meme-worthy resume I found online.
+
+Meet **Ham Dugo**:
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeBefore} alt="Ham Dugo original meme resume" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+Everything here is iconic:
+- An avatar with sunglasses and the handle `TheHamMan@hotmail.com`.
+- A business process flow diagram in the header: `Customer → Dugo → Sales $$`.
+- Skill rating bars: *Keeping it cool 100%*, *Customer service 90%*, *MS Office 35%*, and Italian at a modest *15%*.
+- And the crown jewel — a key achievement at ZARA:  
+  *«Once convinced a Chechen businessman to buy our entire collection of button up shirts»*.
+
+I fed this masterpiece into HR Breakers, targeted a retail position, and clicked generate. Here’s what came out:
+
+<div style="max-width: 620px; margin: 2.2rem auto;">
+  <Image src={resumeAfter} alt="Ham Dugo tailored resume generated by HR Breakers" style="border-radius: 6px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); display: block; width: 100%;" />
+</div>
+
+The model didn’t just clean up the chaotic colors and produce a crisp, one-page Harvard-format PDF. It took the story about the Chechen businessman and translated it into textbook corporate English:
+
+> *«Successfully negotiated and executed bulk inventory sales with high-volume international clientele.»*
+
+The result speaks for itself. Zero fabrication: bulk clearance of slow-moving inventory to a high-volume international client is a literal fact, packaged precisely how corporate recruiters expect to read it.
+
+## Bottom text
+
+The service is live at [hrbreakers.com](https://hrbreakers.com). Your first three generations are free so you can test your own resumes and see how it performs in practice.
+
+<LinkCard
+	title="HR Breakers"
+	description="Tailors your existing resume to a specific job opening and outputs a focused PDF ready to send."
+	href="https://hrbreakers.com"
+	domain="hrbreakers.com"
+	badge="AI Tool"
+	accent="#d7ff43"
+	icon={hrBreakersLogo}
+/>
+
+Give it a spin!
