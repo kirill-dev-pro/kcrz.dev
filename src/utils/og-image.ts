@@ -252,7 +252,7 @@ export async function generateArticleOgImage(options: ArticleOgOptions): Promise
 														fontWeight: 700,
 														color: '#f2f5f3',
 													},
-													children: 'Kirill Chuprov',
+													children: 'kcrz',
 												},
 											},
 											{
@@ -438,7 +438,7 @@ export async function generateSiteOgImage(): Promise<Buffer> {
 											letterSpacing: '-0.03em',
 											color: '#ffffff',
 										},
-										children: 'Kirill Chuprov',
+										children: 'kcrz.dev',
 									},
 								},
 								{

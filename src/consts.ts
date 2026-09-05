@@ -3,4 +3,4 @@
 
 export const SITE_TITLE = 'Kcrz.dev';
 export const SITE_DESCRIPTION =
-	'Kirill Chuprov builds developer infrastructure and focused products that reduce complexity.';
+	'Building developer infrastructure and focused products that reduce complexity.';
