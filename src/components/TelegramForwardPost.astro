@@ -1,0 +1,227 @@
+---
+import { Image } from 'astro:assets';
+import photo1 from '../assets/blog/amsterdam-housing/amsterhell/photo1.jpeg';
+import photo2 from '../assets/blog/amsterdam-housing/amsterhell/photo2.jpeg';
+import photo3 from '../assets/blog/amsterdam-housing/amsterhell/photo3.jpeg';
+import photo4 from '../assets/blog/amsterdam-housing/amsterhell/photo4.jpeg';
+import photo5 from '../assets/blog/amsterdam-housing/amsterhell/photo5.jpeg';
+import photo6 from '../assets/blog/amsterdam-housing/amsterhell/photo6.jpeg';
+import photo7 from '../assets/blog/amsterdam-housing/amsterhell/photo7.jpeg';
+import photo8 from '../assets/blog/amsterdam-housing/amsterhell/photo8.jpeg';
+---
+
+<div class="tg-embed-box">
+	<div class="tg-bubble">
+		<div class="tg-forward-indicator">
+			<span class="tg-forward-label">Пересланные сообщения</span>
+		</div>
+
+		<div class="tg-forward-content">
+			<div class="tg-author-row">
+				<span class="tg-author-name">Даня</span>
+				<span class="tg-post-date">25.09.26</span>
+			</div>
+
+			<div class="tg-text-block">
+				<p>Трёхкомнатная квартира №337 Utrecht, 3542 DJ</p>
+				<p>Для семьи до 3–5 человек. Три прописки. Если все с одной фамилией — прописка всем.</p>
+				<p>Коммуналка входит в аренду. Нужны справки о доходах за последние 3 месяца. Доступна с 1 октября (сейчас ремонт). Просмотр и бронь — в любой день.</p>
+				<p class="tg-cost-line">Аренда: 2600 € в месяц (коммуналка включена) Залог: 2600 € Админ. сбор: 3900 € (1,5 месяца)</p>
+				<p class="tg-big-total">Первый платёж: <strong>9100 €</strong> Дальше: 2600 € раз в месяц.</p>
+				<p>Пишите в личку с номером объявления. ⬇️</p>
+			</div>
+
+			<div class="tg-gallery-header">
+				<span class="tg-author-name">Даня</span>
+				<span class="tg-post-date">25.09.26</span>
+			</div>
+
+			<div class="tg-photos-gallery">
+				<div class="tg-row tg-row-2">
+					<div class="tg-photo-item"><Image src={photo1} alt="Квартира в Утрехте — коридор" class="tg-img" /></div>
+					<div class="tg-photo-item"><Image src={photo2} alt="Квартира в Утрехте — гостиная с ковролином" class="tg-img" /></div>
+				</div>
+				<div class="tg-row tg-row-3">
+					<div class="tg-photo-item"><Image src={photo3} alt="Квартира в Утрехте — санузел" class="tg-img" /></div>
+					<div class="tg-photo-item"><Image src={photo4} alt="Квартира в Утрехте — бойлерная" class="tg-img" /></div>
+					<div class="tg-photo-item"><Image src={photo5} alt="Квартира в Утрехте — спальня" class="tg-img" /></div>
+				</div>
+				<div class="tg-row tg-row-3">
+					<div class="tg-photo-item"><Image src={photo6} alt="Квартира в Утрехте — ванна" class="tg-img" /></div>
+					<div class="tg-photo-item"><Image src={photo7} alt="Квартира в Утрехте — комната с гардеробом" class="tg-img" /></div>
+					<div class="tg-photo-item"><Image src={photo8} alt="Квартира в Утрехте — вторая спальня" class="tg-img" /></div>
+				</div>
+			</div>
+
+			<div class="tg-meta-bottom">
+				<span class="tg-forwards-count">
+					<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+						<path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
+					</svg>
+					3
+				</span>
+				<span class="tg-time">22:59</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.tg-embed-box {
+		display: flex;
+		justify-content: center;
+		margin: 2.5rem 0;
+		width: 100%;
+		font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+	}
+
+	.tg-bubble {
+		position: relative;
+		width: 100%;
+		max-width: 580px;
+		background: #182533;
+		border: 1px solid rgba(242, 245, 243, 0.12);
+		border-radius: 14px;
+		padding: 0.9rem 1.1rem;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+		color: #ffffff;
+		box-sizing: border-box;
+	}
+
+	.tg-forward-indicator {
+		margin-bottom: 0.45rem;
+	}
+
+	.tg-forward-label {
+		font-size: 13px;
+		color: #708499;
+		font-weight: 500;
+	}
+
+	.tg-forward-content {
+		position: relative;
+		padding-left: 0.75rem;
+		border-left: 2px solid #5288c1;
+	}
+
+	.tg-author-row,
+	.tg-gallery-header {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		margin-bottom: 0.4rem;
+	}
+
+	.tg-gallery-header {
+		margin-top: 0.85rem;
+	}
+
+	.tg-author-name {
+		font-weight: 600;
+		font-size: 14.5px;
+		color: #64b5ef;
+	}
+
+	.tg-post-date {
+		font-size: 12px;
+		color: #708499;
+	}
+
+	.tg-text-block {
+		font-size: 14px;
+		line-height: 1.45;
+		color: rgba(255, 255, 255, 0.94);
+		margin-bottom: 0.65rem;
+	}
+
+	.tg-text-block p {
+		margin: 0.4rem 0 !important;
+	}
+
+	.tg-cost-line {
+		color: #ff9980;
+	}
+
+	.tg-big-total {
+		background: rgba(255, 77, 77, 0.14);
+		border-left: 3px solid #ff4d4d;
+		padding: 0.35rem 0.6rem;
+		border-radius: 4px;
+		font-size: 14.5px;
+	}
+
+	.tg-big-total strong {
+		color: #ff6b6b;
+		font-size: 15.5px;
+	}
+
+	.tg-photos-gallery {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		margin-top: 0.45rem;
+		border-radius: 8px;
+		overflow: hidden;
+		background: #0e1621;
+	}
+
+	.tg-row {
+		display: grid;
+		gap: 3px;
+	}
+
+	.tg-row-2 {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.tg-row-3 {
+		grid-template-columns: 1fr 1fr 1fr;
+	}
+
+	.tg-photo-item {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+		background: #0e1621;
+	}
+
+	.tg-img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		max-height: 220px;
+		object-fit: cover;
+		transition: transform 160ms ease, opacity 160ms ease;
+	}
+
+	.tg-img:hover {
+		transform: scale(1.03);
+		opacity: 0.95;
+	}
+
+	.tg-meta-bottom {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 0.65rem;
+		margin-top: 0.5rem;
+		font-size: 11.5px;
+		color: #708499;
+	}
+
+	.tg-forwards-count {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+	}
+
+	@media (max-width: 520px) {
+		.tg-bubble {
+			padding: 0.75rem 0.85rem;
+		}
+
+		.tg-img {
+			max-height: 160px;
+		}
+	}
+</style>
