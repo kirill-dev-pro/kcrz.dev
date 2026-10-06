@@ -1,0 +1,175 @@
+---
+title: "Fear and Loathing in Amsterdam: Apartment Hunting"
+description: "A personal take on renting in the Netherlands: BSN loopholes, corporate lotteries, 200 applicants per viewing, and why hiring a tenant agent is the only way to survive."
+pubDate: "Oct 06 2026"
+heroImage: "../../assets/blog/amsterdam-housing/sticker.webp"
+---
+
+import { Image } from "astro:assets";
+import LinkCard from "../../components/LinkCard.astro";
+import TelegramEmbed from "../../components/TelegramEmbed.astro";
+import TelegramForwardPost from "../../components/TelegramForwardPost.astro";
+import expatChatWarning from "../../assets/blog/amsterdam-housing/expat-chat-warning.jpg";
+import wolfMeme from "../../assets/blog/amsterdam-housing/are-you-ahueli-tam.jpg";
+import virtualViewing from "../../assets/blog/amsterdam-housing/virtual-viewing-110-people.jpg";
+import fundaLogo from "../../assets/blog/amsterdam-housing/funda-logo.svg";
+import parariusLogo from "../../assets/blog/amsterdam-housing/pararius-logo.png";
+import kamernetLogo from "../../assets/blog/amsterdam-housing/kamernet-logo.png";
+
+In September 2026, my wife and I relocated from Moscow to Amsterdam. We had 2 entry visas, 75 articles of clothing, 5 passports between the two of us, and 1 employment contract kicking off in October. Not that we needed all that for the move, but once you get locked into a serious relocation, the tendency is to push it as far as you can.
+
+The company put us up in a hotel for exactly one month so we would have time to sort out our paperwork, register with the municipality, and secure long-term housing.
+
+Before this, I had plenty of standard rental experience in Moscow, St. Petersburg, and Helsinki, plus short tourist stays across various countries. Everywhere else, the process was predictable: open a website, pick options, get in touch, view the place, sign a lease, and move in. Everyone warned me that renting in Amsterdam would be rough, but I had no idea just how much harder it is in reality.
+
+Before moving, I talked to friends and dove headfirst into every local expat Telegram chat I could find, asking where to look and how the whole thing worked.
+
+The chats greeted me with messages like this:
+
+<div style="margin: 2.2rem 0; display: flex; justify-content: center;">
+  <Image
+    src={expatChatWarning}
+    alt="Expat chat message: DO NOT COME TO THIS COUNTRY"
+    style="max-width: 420px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);"
+  />
+</div>
+
+## The Bureaucratic Loophole
+
+First, a quick reality check on what documents you actually need to start hunting for an apartment in the Netherlands.
+
+The baseline requirement is municipal registration in Amsterdam. But you can only register at your actual residential address. No home = no registration. And without registration, nobody will rent you an apartment.
+
+What does an expat with nowhere to live do? My company allowed us to register at their legal office address. That gave us our BSN (citizen service number), which unlocked our ability to apply for apartments. It is a well-known legal loophole: everyone knows about it, but nobody touches it, because people have to survive somehow.
+
+Next, housing corporations demand a DigiD — the Dutch government authentication system tied to your phone number.
+
+You can only get a DigiD if you already have a BSN. You sign up online, and then... a physical paper letter with an activation code is sent to your registered address with up to a week’s variance. Only after typing that code into the website does your access activate.
+
+In theory, DigiD is supposed to fetch your official registry records in one click. In practice, for a fresh expat, it does absolutely nothing. There are zero records for you in Dutch registries, so DigiD and apps like Datakeeper and MyQii come up completely empty. Corporations still demand that you manually upload every single document. And without a complete dossier, you often can't even register with them — they won't even glance at applications lacking proof of income for the past three consecutive months.
+
+## Where to Look for Housing?
+
+From chat recommendations, I assembled the main portals for finding a place:
+
+<LinkCard
+  title="Funda"
+  description="The main real estate portal in the Netherlands: buying and renting properties across the country."
+  href="https://www.funda.nl"
+  domain="funda.nl"
+  badge="Portal"
+  accent="#f7a100"
+  cornerLogo={fundaLogo}
+/>
+
+<LinkCard
+  title="Pararius"
+  description="The largest rental-focused marketplace for apartments throughout the Netherlands."
+  href="https://www.pararius.nl"
+  domain="pararius.nl"
+  badge="Rental"
+  accent="#ff5c39"
+  cornerLogo={parariusLogo}
+/>
+
+<LinkCard
+  title="Kamernet"
+  description="Niche portal geared towards rooms, student flats, and flatshares."
+  href="https://kamernet.nl"
+  domain="kamernet.nl"
+  badge="Rooms"
+  accent="#0099ff"
+  cornerLogo={kamernetLogo}
+/>
+
+I started systematically digging through these portals: checking prices, looking at listings, and seeing what to expect.
+
+My baseline expectation was simple. Monitor listings for a couple of weeks, figure out price ranges, understand turnaround times across different segments, and most importantly — understand where to look.
+
+That was mistake number one.
+
+At first glance, it looks totally realistic to find an apartment in Amsterdam starting around €1,500: a decent one-bedroom relatively close to the center, within the A10 ring road, with decent energy efficiency, or even in a brand-new building.
+
+Those listings really exist, and the apartments are physically there. But there is, as they say, a catch.
+
+## How the Housing Market Would Look Under Communism
+
+The Netherlands enforces a strict state regulatory system on real estate (the WWS points scale), which legally caps how much rent landlords can charge for mid-market and social apartments.
+
+As a result, apartments look delightfully cheap on paper, but renting them in real life turns into a quest reserved exclusively for the "Chosen Ones."
+
+By "Chosen One," I literally mean someone who either won Russian roulette or had the fortune of being born in the Netherlands and earning local white salary for the past 10 years — clean enough for a Dutch realtor to review the immaculate dossier and deem them worthy.
+
+The artificially suppressed price blows the supply-and-demand balance out of the water: for an apartment priced cheaply by local standards, an insane stampede of hundreds of applicants breaks out.
+
+## A Graveyard of Paid Subscriptions and Bots
+
+In an attempt to smash through this wall, I tried every paid tool and service I heard about. Here is my personal leaderboard of wasted money:
+
+- **Uprent** — an automated bot designed to apply to new listings instantly. Completely useless: notifications fly in by the dozen, return is zero.
+- **Pararius Subscription** — bought a paid account to be the first to apply to new listings. Equally useless: being applicant #1 out of 200 grants you exactly zero privileges.
+- **Huurwoningen** — signed up to apply through their database. Complete waste of time.
+- **Kamernet Subscription** — yielded exactly one viewing, where the conditions were nowhere near what I expected: not an actual apartment, leased for only two months, and priced like a golden carriage. Hard pass.
+- **verhuurtbeter.nl** — paid €55 just to join their waitlist. Pure nonsense: without a local Dutch track record and a functioning DigiD, it does nothing for you.
+- **Corporations: MVGM, vb&t, REBO** — large property management firms and housing funds where a fresh expat has zero chance. At the front door, they hit you with draconian income multipliers (gross salary must be 3.5–4x the monthly rent), indefinite Dutch employment contracts, and endless closed queues.
+
+## The Fucking Casino
+
+Large corporations own huge volumes of housing and are legally required to lease units at capped below-market rates. Demand for these apartments is enormous.
+
+To pick a tenant out of hundreds of people who meet 100% of the income and documentation criteria, corporations turned to an actual lottery.
+
+In reality, there are two distinct tiers of this lottery:
+
+- **Tier 1: The lottery to get a viewing.** Just to be invited through the door, the agent has to pick your application out of 200 submissions sent on day one. Or they lazily gather applications for a week and then invite candidates at a time convenient only to them — say, Tuesday at 2:00 PM. The agent has zero rush, while you drop all work meetings and sprint across town for this sole viewing. Sometimes they don't even bother with in-person visits and simply herd everyone into a single Google Meet call.
+
+<figure style="margin: 2.2rem 0; text-align: center;">
+  <Image
+    src={virtualViewing}
+    alt="Average apartment search experience: virtual viewing, 110 applicants on call"
+    style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);"
+  />
+  <figcaption style="margin-top: 0.8rem; font-size: 0.88rem; color: var(--muted); font-style: italic;">
+    average apartment search experience: virtual viewing, 110 people trying to rent the same flat
+  </figcaption>
+</figure>
+
+- **Tier 2: The lottery after the viewing.** You show up (or sit through a video call with 100 fellow sufferers), inspect the apartment, confirm you want it — and the corporation rolls the dice again to pick a winner at random (or "at random").
+
+<div style="margin: 2.2rem 0; display: flex; justify-content: center;">
+  <Image
+    src={wolfMeme}
+    alt="Wolf banging on door: ARE YOU AHUELI TAM?!"
+    style="max-width: 420px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);"
+  />
+</div>
+
+## Now Dance for the Realtor!
+
+Driven by brutal competition, applicants attempt to stand out from the crowd by any means possible.
+
+Some build personal portfolio websites and interactive pitch decks, highlighting their pristine renting history, habits, and pets. Others show up to viewings with giant printed binders of landlord reference letters, bank statements, and cover letters to personally hand over to the agent.
+
+Another popular tip from expat chats: _"Call the phone number in the listing immediately — a phone call with a human boosts your chances."_
+
+In my experience, this never worked. I applied to around 100 apartments, running automated bots and scouring sites manually. Actual working phone numbers exist on maybe 10% of listings. And even if you get through, you hit an automated answering machine explaining agency policy and reminding you that calls are useless because everything is handled strictly online.
+
+## How It Actually Works
+
+When standard channels hit a dead end, you enter the grey market — the so-called "rigged lotteries."
+
+This boils down to backroom deals with the listing agent who decides who actually gets the keys. Rumor has it this service costs serious cash: people pay to get "randomly" drawn. I never personally met anyone offering this directly, but in a distorted market with extreme shortages, corruption is an inevitable byproduct.
+
+Meanwhile, Dutch law strictly forbids listing agencies from charging tenant commissions. Landlords are also barred from demanding security deposits greater than two months' rent. Landlords would love to take six months upfront, but the law prohibits it.
+
+Yet when desperation sets in, the law gets thrown out the window. Expat chats frequently feature gems like this:
+
+<TelegramForwardPost />
+
+This is an outright violation of Dutch tenancy law, but in a state of desperation, people agree even to this.
+
+On the legitimate end of the spectrum, you have dedicated tenant search agents (_aanhuurmakelaar_). Their services start at €2,000.
+
+And that is precisely where I found myself: hiring a paid agent to find a place that you can actually rent.
+
+Because doing it solo in Amsterdam currently looks like this: you apply to everything in sight, burn weeks of your life, and have no idea whether you have a fighting chance or are simply spinning a roulette wheel with zero odds.
